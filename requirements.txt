@@ -1,0 +1,8 @@
+numpy
+scipy
+matplotlib
+xarray
+geopandas
+netCDF4
+statsmodels
+pre-commit
