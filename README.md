@@ -7,19 +7,19 @@ This code was written by Constanze Reinken.
 
 ###  parameterization.py
 
-This script calculates a timeseries of stochastic parameter (drift, volatility, formation rate, abrupt drainage rate) from the parameterization dataset. It finds the best fitting regression function between the parameter and climate variables (e.g. thaw degree days) out of a collection of common functions and outputs the function and fitted parameter values in the file clim_param_func.py.
+This script calculates a timeseries of stochastic parameter (drift, volatility, formation rate, abrupt draianage rate) from the parameterization dataset. It finds the best fitting regression function between the parameter and the climate variables (thaw degree days, precipitation) out of a collection of common functions and outputs the function and fitted parameter values in file clim_param_func.py.
 
 ### clim_param_func.py
 
-This script contains functions and parameter describing the relationship between stochastic parameter (drift, volatility, formation rate, abrupt drainage rate) and climate variables (e.g. thaw degree days). Obtained via parameterization.py.
+This script contains functions and parameter describing the relationship between stochastic parameter (drift, volatility, formation rate, abrupt draianage rate) and cliamte variables (thaw degree days, precipitation). Obtained via parameterization.py.
 
 ### model.py
 
-This script contains the model code and simulates changes in thermokarst lake distributions using the parameterization contained in clim_param_func.py. The number of ensemble runs can be defined when executing the script. The script creates netcdf files for each ensemble run containing timeseries of the individual lakes and timeseries of drained and lake area fraction. For the latter, the model also outputs the ensemble mean.
+This script contains the model code and simulates changes in thermokarst lake distributions using the parameterization contained in clim_param_func.py. The number of ensemble runs can be defined when executing the script. The script creates netcdf files for each ensemble run containing timeseries of the individual lakes and timeseries of drained and lake area fraction. For the latter, the model also outputs the ensemble mean. It can also be used to create a dataset that can be perturbed and turned into a synthetic parameterization dataset via synth_data.py.
 
 ### plotting.py
 
-This script creates a timeseries plot of lake and drained area fractions as well as a gif of each ensemble run. 
+This script creates timeseries plot of lake and drained area fractions; as well as a gif of one ensemble run. Which one can be defined when executing the script.
 
 ## Folder structure
 
@@ -29,7 +29,7 @@ Observational / remote sensing data on lake areas can be stored here and used di
 
 ### parameter
 
-The .py files that can be created by parameterization.py are stored here, as well as txt files of the calculated parameter timeseries. 
+The .py files that can be created by parameterization.py are stored here, as well as txt files of the calculate parameter timeseries. 
 
 ### forcing
 
