@@ -16,20 +16,26 @@ import os
 
 #%% directories
 
-# data
-path = '/Users/constanzereinken/Data/drive-download-20240119T112608Z-001/'
-
 # set working directory
 import os
 os.chdir(os.path.join( os.path.dirname( __file__ ), '..' ))
 #%% Area of study region
+import sys  # Import sys to access command-line arguments
 
-A = 40*40 * 1e6
+# Check if the correct number of arguments is provided (5 arguments including the script name)
+if len(sys.argv) != 5:
+    sys.exit(1)  # Exit the script if the number of arguments is incorrect
+
+# Assign each command-line argument to a variable, converting to the appropriate type
+A = float(sys.argv[1])
+lake_file = sys.argv[2]
+climate_data = sys.argv[3]  
+subset_file = sys.argv[4]
+drainage_file = sys.argv[5]
 
 #%% import timeseries dataset
 
-file = 'UTM54_cleaned.nc'
-lakes = xr.open_dataset(path+file)
+lakes = xr.open_dataset(lake_file)
 lakes_df = lakes.to_dataframe()
 
 # Remove duplicates
@@ -42,17 +48,17 @@ years = lakes.date.values[16:]
 #%% OPTIONAL: import IDs for subset of the dataset via shapefile
 
 # import shapefile for area of interest, with lakes as polygons
-subset_file = path + 'UTM54_North_ini_40x40.shp'
-subset = gpd.read_file(subset_file)
+if subset_file:
+    subset = gpd.read_file(subset_file)
 
-ID_list = list(subset['id_geohash'])
+    ID_list = list(subset['id_geohash'])
 
-ID_list_cleaned = []
-for i in ID_list:
-    if any(ids == i for ids in lakes.id_geohash.values):
-        ID_list_cleaned.append(i)
+    ID_list_cleaned = []
+    for i in ID_list:
+        if any(ids == i for ids in lakes.id_geohash.values):
+            ID_list_cleaned.append(i)
 
-lakes = lakes.sel(id_geohash = ID_list_cleaned, date = years)
+    lakes = lakes.sel(id_geohash = ID_list_cleaned, date = years)
 
 #%% OPTIONAL: convert ha to m^2
 
@@ -118,18 +124,18 @@ f_rate_sDist = f_rate[1:] / (A-(A*(drained_frac[:-1] + lake_frac[:-1])))
 
 #%% OPTIONAL: import drainage event data (Chen et al 2023)
 
-file_drainage = '/Users/constanzereinken/Data/Arctic_lake_drainage_events/Drainage_events_UTM54_North_40x40.shp'
-drainage_events = gpd.read_file(file_drainage)
-drainage_events = drainage_events.where(drainage_events.Drain_pct > 0.9)
+if drainage_file:
+    drainage_events = gpd.read_file(drainage_file)
+    drainage_events = drainage_events.where(drainage_events.Drain_pct > 0.9)
 
-drain_timeseries = np.zeros(len(years))
-for i in range(2000, 2021):
-    drain_timeseries[i - 2000] = len(drainage_events.loc[drainage_events.DrainYear == i])
+    drain_timeseries = np.zeros(len(years))
+    for i in range(2000, 2021):
+        drain_timeseries[i - 2000] = len(drainage_events.loc[drainage_events.DrainYear == i])
 
-# scale d_rate by lake and disturbed area
+    # scale d_rate by lake and disturbed area
 
-d_rate_sDist = drain_timeseries[1:] / (A*(drained_frac[:-1] + lake_frac[:-1]))
-d_rate_sLake = drain_timeseries[1:] / (A * lake_frac[:-1])
+    d_rate_sDist = drain_timeseries[1:] / (A*(drained_frac[:-1] + lake_frac[:-1]))
+    d_rate_sLake = drain_timeseries[1:] / (A * lake_frac[:-1])
 
 
 #%% save parameter timeseries in txt files
@@ -143,10 +149,8 @@ np.savetxt('parameter/d_rate_sLake.txt', d_rate_sLake)
 
 #%% import climate data
 
-# thaw degree days
-tdd = np.loadtxt('forcing/tdd_forcing.txt')[16:]
-tdd_running_mean = np.convolve(tdd[1:], np.ones(3)/3, mode='valid')
-
+climvar1 = np.loadtxt(climate_data)[16:]
+climvar1_running_mean = np.convolve(tdd[1:], np.ones(3)/3, mode='valid')
 
 #%% kernel smoothing of f_ and d_rate 
 
@@ -184,7 +188,6 @@ functions = [exponential, logarithmic, linear]
 #%% fit different functions
 
 best_fit = {}
-#params = {'mu': mu[1:], 'sigma': sigma[1:], 'f_rate_sDist': f_rate_sDist[1:]} #, 'f_rate_sLake': f_rate_sLake[1:], 'd_rate_sDist': d_rate_sDist[1:], 'd_rate_sLake': d_rate_sLake[1:]}
 params = {'f_rate_sDist': f_rate_sDist[:-2], 'f_rate_sLake': f_rate_sLake[:-2], 'd_rate_sDist': d_rate_sDist[:-2], 'd_rate_sLake': d_rate_sLake[:-2], "mu": mu[1:-2], "sigma": sigma[1:-2]}
 
 for param_name, param in params.items():
@@ -217,7 +220,7 @@ for param_name, param in params.items():
 
 import inspect
 
-with open('parameter/clim_param_func_utm54_40x40.py', 'w') as f:
+with open('parameter/clim_param_func_utm54.py', 'w') as f:
 
     for param_name, param in params.items():
 
