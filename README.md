@@ -4,15 +4,6 @@ This code was written by Constanze Reinken.
 
 ## Scripts
 
-### rm_analysis.py
-
-This script conducts a signal-to-noise and statistical power analysis of a netcdf file with observational lake data.
-The dataset needs to be in the form of lake area data as derived from Landsat imagery by Ingmar Nitze 2024, i.e. it needs to contain timeseries of permanent surface area and land area for individual lake objects with ids.
-Via the analysis, the script can give a required length for any parameterization dataset in order to discern a trend in lake area changes.
-
-### perturb_data.py
-
-This script turns a dataset from tlm.py into a synthetic parameterization dataset by perturbing it and deleting some points to represent 'missing data'. It is saved as a netcdf file.
 
 ###  parameterization.py
 
@@ -22,9 +13,9 @@ This script calculates a timeseries of stochastic parameter (drift, volatility, 
 
 This script contains functions and parameter describing the relationship between stochastic parameter (drift, volatility, formation rate, abrupt draianage rate) and cliamte variables (thaw degree days, precipitation). Obtained via parameterization.py.
 
-### tlm.py
+### model.py
 
-This script contains the actual model code and simulates changes in thermokarst lake distributions using the parameterization contained in clim_param_func.py. The number of ensemble runs can be defined when executing the script. The script creates netcdf files for each ensemble run containing timeseries of the individual lakes and timeseries of drained and lake area fraction. For the latter, the model also outputs the ensemble mean. It can also be used to create a dataset that can be perturbed and turned into a synthetic parameterization dataset via synth_data.py.
+This script contains the model code and simulates changes in thermokarst lake distributions using the parameterization contained in clim_param_func.py. The number of ensemble runs can be defined when executing the script. The script creates netcdf files for each ensemble run containing timeseries of the individual lakes and timeseries of drained and lake area fraction. For the latter, the model also outputs the ensemble mean. It can also be used to create a dataset that can be perturbed and turned into a synthetic parameterization dataset via synth_data.py.
 
 ### plotting.py
 
@@ -34,15 +25,15 @@ This script creates timeseries plot of lake and drained area fractions; as well 
 
 ### input
 
-Any real observational data can be stored here and either used directly for parameterization.py or rm_analysis.py in order to aid in creating a synthetic dataset of the required size. The required size that is calculated with rm_analysis.py is stored here in sample_size.txt.
+Observational / remote sensing data on lake areas can be stored here and used directly for parameterization.py and as an initialization dataset in model.py. 
 
-### parameterization
+### parameter
 
-The .py files that can be created by parameterization.py are stored here.
+The .py files that can be created by parameterization.py are stored here, as well as txt files of the calculate parameter timeseries. 
 
 ### forcing
 
-Files of cliamte variables are stored here as txt files.
+Files of climate variables are stored here as txt files.
 
 ### output
 
@@ -63,7 +54,6 @@ here:
 ### https://
 
 
-Thank you and good luck!
 
 ## Contributors
 - Constanze Reinken
@@ -72,7 +62,3 @@ Thank you and good luck!
 - Victor Brovkin
 - Ingmar Nitze
 - Philipp deVrese
-
-## Template
-
-Repository template by Clara Bayley (MPI-M).
