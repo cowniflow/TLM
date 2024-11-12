@@ -29,127 +29,54 @@ def merge(area_water, xcoord, ycoord):
 
     # loop through all circles
     if len(idx_circles) != 0:
-        for i in idx_circles:
+        for i in idx_circles: 
             for j in idx_circles:
 
-                if i != j and area_water[i] != 0 and area_water[j] != 0:
+                if i != j and area_water_new[i] != 0 and area_water_new[j] != 0:     
                     # calculate distance between centers
-                    dx = abs(xcoord[i] - xcoord[j])
-                    dy = abs(ycoord[i] - ycoord[j])
-                    dist = (dx**2 + dy**2)**0.5
-
-                    # check for overlapping circles
-                    if (dist + 0.01) < np.sqrt(area_water[i]/np.pi) + np.sqrt(area_water[j]/np.pi):
+                    dx = abs(xcoord_new[i] - xcoord_new[j])
+                    dy = abs(ycoord_new[i] - ycoord_new[j])
+                    dist = (dx**2 + dy**2)**0.5 
+                            
+                    # check for overlapping circles 
+                    if (dist + 0.01) < np.sqrt(area_water_new[i]/np.pi) + np.sqrt(area_water_new[j]/np.pi):
 
                         # calculate new centre (centre of mass) and transfer area to the bigger one of the circles
                         if area_water[j] >= area_water[i]:
-                            xcoord_new[j] = (1 / (area_water[j] + area_water[i])) * np.sum((area_water[j] * xcoord[j], area_water[i] * xcoord[i]))
-                            ycoord_new[j] = (1 / (area_water[j] + area_water[i])) * np.sum((area_water[j] * ycoord[j], area_water[i] * ycoord[i]))
-                            area_water_new[j] += area_water[i]
+                            xcoord_new[j] = (1 / (area_water_new[j] + area_water_new[i])) * np.sum((area_water_new[j] * xcoord_new[j], area_water_new[i] * xcoord_new[i]))
+                            ycoord_new[j] = (1 / (area_water_new[j] + area_water_new[i])) * np.sum((area_water_new[j] * ycoord_new[j], area_water_new[i] * ycoord_new[i]))
+                            area_water_new[j] += area_water_new[i]
                             area_water_new[i] = 0
-                        else:
-                            xcoord_new[i] = (1 / (area_water[i] + area_water[j])) * np.sum((area_water[i] * xcoord[i], area_water[j] * xcoord[j]))
-                            ycoord_new[i] = (1 / (area_water[i] + area_water[j])) * np.sum((area_water[i] * ycoord[i], area_water[j] * ycoord[j]))
-                            area_water_new[i] += area_water[j]
-                            area_water_new[j] = 0
 
+                        else:
+                            xcoord_new[i] = (1 / (area_water_new[i] + area_water_new[j])) * np.sum((area_water_new[i] * xcoord_new[i], area_water_new[j] * xcoord_new[j]))
+                            ycoord_new[i] = (1 / (area_water_new[i] + area_water_new[j])) * np.sum((area_water_new[i] * ycoord_new[i], area_water_new[j] * ycoord_new[j]))
+                            area_water_new[i] += area_water_new[j]
+                            area_water_new[j] = 0
+                        
     return area_water_new, xcoord_new, ycoord_new
 
-# def total_area(xcoord, ycoord, area_water, area_land):
 
-#     total = np.nansum(area_land)
-#     overlap = 0
-#     # select all circle objects with drained area
-#     idx_circles = [i for i in range(len(area_land)) if area_land[i] != 0 and not math.isnan(area_land[i])]
+#%% Import the necessary parameter, initialization data and forcing
 
-#     # loop through all circles
-#     if len(idx_circles) != 0:
-#         for i in idx_circles:
-#             for j in idx_circles:
-#                 if j != i:
+import sys  # Import sys to access command-line arguments
 
-#                     # calculate distance between centers
-#                     dx = abs(xcoord[i] - xcoord[j])
-#                     dy = abs(ycoord[i] - ycoord[j])
-#                     dist = (dx**2 + dy**2)**0.5
+# Check if the correct number of arguments is provided (5 arguments including the script name)
+if len(sys.argv) != 8:
+    sys.exit(1)  # Exit the script if the number of arguments is incorrect
 
-#                     ri = math.sqrt((area_water[i] + area_land[i]) / math.pi)
-#                     rj = math.sqrt((area_water[j] + area_land[j]) / math.pi)
-#                     # check for overlapping circles
-#                     if dist < ri + rj:
-
-#                         if dist <= abs(ri - rj):
-#                             # One circle is completely within the other
-#                             overlap += math.pi * min(ri, rj) ** 2
-
-#                         else:
-#                             ri2, rj2, d2 = ri**2, rj**2, dist**2
-#                             alpha = np.arccos((d2 + ri2 - rj2) / (2*dist*ri))
-#                             beta = np.arccos((d2 + rj2 - ri2) / (2*dist*rj))
-#                             intersection_area =  ( ri2 * alpha + rj2 * beta -0.5 * (ri2 * np.sin(2*alpha) + rj2 * np.sin(2*beta)))
-#                             overlap += intersection_area
-
-#     return total - overlap
-
-def distribute_circles(lake_sizes, space_size):
-
-    class Circle:
-        def __init__(self, x, y, radius):
-            self.x = x
-            self.y = y
-            self.radius = radius
-
-    def overlaps(self, other):
-        distance = math.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
-        return distance < (self.radius + other.radius)
-
-    circles = []
-    x = []
-    y = []
-    for i in range(len(x0_lake)):
-        radius = np.sqrt(lake_sizes[i]/np.pi)
-        x.append(np.random.uniform(radius, space_size - radius))
-        y.append(np.random.uniform(radius, space_size - radius))
-        new_circle = Circle(x[i], y[i], radius)
-
-        # Resolve overlaps
-        while any(overlaps(new_circle,c) for c in circles):
-            x[i] = np.random.uniform(radius, space_size - radius)
-            y[i] = np.random.uniform(radius, space_size - radius)
-
-        circles.append(Circle(x[i], y[i], radius))
-
-    return x,y
+# Assign each command-line argument to a variable, converting to the appropriate type
+A_cell = float(sys.argv[1])  
+gr_ice = float(sys.argv[2])  
+T = int(sys.argv[3]) 
+dt = float(sys.argv[4])  
+clim_param_func = sys.argv[5]  
+e_nr = int(sys.argv[6]) 
+ini_lakes = sys.argv[7]  
+forcing = sys.argv[8]  
 
 
-# #%% Import the necessary parameter
-# import sys  # Import sys to access command-line arguments
-
-# # Check if the correct number of arguments is provided (5 arguments including the script name)
-# if len(sys.argv) != 8:
-#     sys.exit(1)  # Exit the script if the number of arguments is incorrect
-
-# # Assign each command-line argument to a variable, converting to the appropriate type
-# A_cell = float(sys.argv[1])  # Convert A_cell to float
-# gr_ice = float(sys.argv[2])  # Convert gr_ice to float
-# T = int(sys.argv[3])  # Convert T to integer
-# dt = float(sys.argv[4])  # Convert dt to float
-# clim_param_func = sys.argv[5]  # clim_param_func is a string, no conversion needed
-# e_nr = int(sys.argv[6])  # Convert e_nr to integer
-# path_ini_lakes = sys.argv[7]  # path_ini_lakes is a string, no conversion needed
-# initial_coords = str(sys.argv[8])   # random or fixed initial (spatial) distribution
-
-#%% temporary parameter values for testing (Usually would be imported from command line arguments)
-
-A_cell = 48623 #km²
-gr_ice = 1
-T = 1000
-dt = 1
-clim_param_func = 'clim_param_func_utm54_big'
-e_nr = 5
-path_ini_lakes = '/Users/constanzereinken/Data/drive-download-20240119T112608Z-001/UTM54_North_big.shp'
-
-#%% imort parameter values and / or functions
+#%% import parameter values and / or functions
 
 import importlib
 
@@ -169,7 +96,7 @@ A_lim = A_cell * gr_ice # maximum potential disturbed area (depends on ground ic
 
 #%% load climate data
 
-tdd = np.loadtxt('data/UTM54_North/tdd_forcing.txt')[:-1]
+tdd = np.loadtxt(forcing)[:-1]
 original_time_points = np.linspace(0, len(tdd) - 1, len(tdd))
 new_time_points = np.linspace(0, len(tdd) - 1, n)
 tdd = np.interp(new_time_points, original_time_points, tdd)
@@ -183,15 +110,13 @@ form_n = math.ceil(A_cell*1e6 * T * f_rate)
 
 # import / create initialization data (lake sizes, DLB sizes)
 import geopandas as gpd
-path = '/Users/constanzereinken/Data/drive-download-20240119T112608Z-001/'
-file = 'UTM54_cleaned.nc'
 lake_dataset = xr.open_dataset(path+file)
 lakes_df = lake_dataset.to_dataframe()
 # Remove duplicates
 lakes_df = lakes_df.loc[~lakes_df.index.duplicated(keep='first')]
 # Convert the DataFrame back to a Dataset
 lakes_nc = lakes_df.to_xarray()
-region = gpd.read_file(path + 'UTM54_North_big.shp')
+region = gpd.read_file(ini_lakes)
 ID_list = list(region['id_geohash'])
 ID_list_cleaned = []
 for i in ID_list:
