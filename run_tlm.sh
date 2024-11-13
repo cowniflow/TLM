@@ -34,6 +34,6 @@ file_forcing = "forcing/tdd_forcing.txt"
 
 # Run scripts to simulate and plot
 python3 tlm.py "$variant" "$A" "$frac_lim" "$T" "$dt" "$e_nr" "$par_script" "$file_ini_lakes" "$subset_lakes" "$file_forcing"
-python3 plotting.py "$A" "$e_nr"
+python3 plotting.py "$A" "$e_nr" "$dt"
 
 echo "Simulating $e_nr ensemble members for a region of $A m^2 and $T years."
