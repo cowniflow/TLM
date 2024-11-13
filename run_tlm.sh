@@ -1,28 +1,39 @@
 #!/bin/bash
 
+# variant (1: , 2:)
+variant = 1
+
 # Size of simulated region
-A_cell=10000e6 # m2
+A = 40*40 * 1e6 # m2
 
-# ground ice content
-gr_ice = 0.3
+# water / depression fraction limit
+frac_lim = 0.3
 
-# Time span and time step
-T=119 # years
+# Time span
+T=119 
+
+# time step
 dt=1
 
 # Nr. of ensemble runs
 e_nr=10
 
-# Parameterization script
-par_script="clim_param_func"
+# parameterization script
+par_script="paramter/clim_param_func"
 
-# Initial lake data
-file_ini_lakes = ""
+# initial lake data
+file_ini_lakes = "input/UTM54_cleaned.nc"
+
+# OPTIONAL: subset of lakes
+subset_lakes = "input/UTM54_North_ini_40x40.shp"
+
+# forcing data
+file_forcing = "forcing/tdd_forcing.txt"
 
 
 
 # Run scripts to simulate and plot
-python3 tlm.py "$A_cell" "$gr_ice" "$T" "$dt" "$par_script" "$e_nr" "$file_ini_lakes" 
-python3 plotting.py "$A_cell" "$e_nr"
+python3 tlm.py "$variant" "$A" "$frac_lim" "$T" "$dt" "$e_nr" "$par_script" "$file_ini_lakes" "$subset_lakes" "$file_forcing"
+python3 plotting.py "$A" "$e_nr"
 
-echo "Simulating $e_nr ensemble members for region of $A_cell m^2 for $T years."
+echo "Simulating $e_nr ensemble members for a region of $A m^2 and $T years."

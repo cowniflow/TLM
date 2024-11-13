@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Size of simulated region
-A_cell= (40x40 * 1e6) # m2
+A = (40*40 * 1e6) # m2
 
 # lake area data
 lake_file = "input/UTM_54_cleaned.nc"
@@ -16,6 +16,6 @@ subset_file = "input/UTM54_North_40x40_m.shp"
 drainage_file = "input/Drainage_events_UTM54_North40x40.shp"
 
 # Run scripts to simulate and plot
-python3 parameterization.py "$A_cell" "$lake_file" "$climate_data" "$subset_file" "$drainage_file"
+python3 parameterization.py "$A" "$lake_file" "$climate_data" "$subset_file" "$drainage_file"
 
 echo "Obtaining parameter from $lake_file"

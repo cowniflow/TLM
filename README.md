@@ -19,7 +19,32 @@ This script contains the model code and simulates changes in thermokarst lake di
 
 ### plotting.py
 
-This script creates timeseries plot of lake and drained area fractions; as well as a gif of each ensemble run. 
+This script creates timeseries plot of lake and drained area fractions; as well as a gif of each ensemble run.
+
+## Running the scripts
+
+### run_parametarization.sh
+
+Shell script to execute parameterization.py. Needs following input: 
+- A: size of the study region
+- lake_file: path and file name for the data file with lake areas (.nc)
+- climate_data: path and file name for the file with data for one climate varialbe (.txt)
+- subset_file (OPTIONAL): path and file name for file with lake IDs for an area within lake_file area (.shp)
+- drainage_gile (OPTIONAL): path and file name for file with drainage events in form of Chen et al 2023 (.shp)
+
+### run_tlm.sh
+
+Shell script to execute model.py and plotting.py. Needs following input:
+- variant: variant of the model; Options: 1, 2 
+- A: size of the simulated region
+- frac_lim: maximum possible water / depression fraction limit
+- T: time span of simulation in years
+- dt: time step of simulation in years
+- e_nr: number of ensemble runs
+- par_script: path and file name for the python script with parameter functions (e.g. clim_param_func.py)
+- file_ini_lakes: path and file name for file with initialization data (.nc)
+- subset_lakes (OPTIONAL): path and file name for file with IDs for an area within file_ini_lakes (.shp)
+- file_forcing: path and file name with forcing data, i.e. one climate variable 
 
 ## Folder structure
 
