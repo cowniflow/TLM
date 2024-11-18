@@ -23,15 +23,20 @@ os.chdir(os.path.join( os.path.dirname( __file__ ), '..' ))
 import sys  # Import sys to access command-line arguments
 
 # Check if the correct number of arguments is provided (5 arguments including the script name)
-if len(sys.argv) != 5:
+if len(sys.argv) != 6:
+    print(f"Error: Expected 5 arguments, but got {len(sys.argv) - 1}.", file=sys.stderr)
     sys.exit(1)  # Exit the script if the number of arguments is incorrect
 
 # Assign each command-line argument to a variable, converting to the appropriate type
-A = float(sys.argv[1])
-lake_file = sys.argv[2]
-climate_data = sys.argv[3]  
-subset_file = sys.argv[4]
-drainage_file = sys.argv[5]
+try:
+    A = float(sys.argv[1])
+    lake_file = sys.argv[2]
+    climate_data = sys.argv[3]  
+    subset_file = sys.argv[4]
+    drainage_file = sys.argv[5]
+except ValueError as e:
+    print(f"Error: {e}", file=sys.stderr)
+    sys.exit(1)
 
 #%% import timeseries dataset
 
@@ -149,8 +154,7 @@ np.savetxt('parameter/d_rate_sLake.txt', d_rate_sLake)
 
 #%% import climate data
 
-climvar1 = np.loadtxt(climate_data)[16:]
-climvar1_running_mean = np.convolve(tdd[1:], np.ones(3)/3, mode='valid')
+climvar = np.loadtxt(climate_data)[16:]
 
 #%% kernel smoothing of f_ and d_rate 
 
@@ -199,9 +203,9 @@ for param_name, param in params.items():
         # Create a mask for non-nan values
         mask = ~np.isnan(param) & ~np.isinf(param)
         # Perform the regression
-        popt, pcov = curve_fit(func, tdd[1:][mask], param[mask])
+        popt, pcov = curve_fit(func, climvar[1:][mask], param[mask])
         # Calculate the y values of the fitted function
-        y_fit = func(tdd[1:][mask], *popt)
+        y_fit = func(climvar[1:][mask], *popt)
         # Calculate the R-squared value
         r2 = r2_score(param[mask], y_fit)
 
@@ -220,7 +224,7 @@ for param_name, param in params.items():
 
 import inspect
 
-with open('parameter/clim_param_func_utm54.py', 'w') as f:
+with open('parameter/clim_param_func.py', 'w') as f:
 
     for param_name, param in params.items():
 
@@ -277,4 +281,6 @@ with open('parameter/clim_param_func_utm54.py', 'w') as f:
 
 f.close()
 
+#%%
+print('Parameterization completed.')
 #%%
