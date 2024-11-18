@@ -25,9 +25,6 @@ echo "Error Log - $(date)" > $error_log
 # Run scripts to simulate and plot
 python3 scripts/parameterization.py "$A" "$lake_file" "$climate_data" "$subset_file" "$drainage_file" >> $output_log 2>> $error_log
 
-# Run scripts to simulate and plot
-python3 scripts/parameterization.py "$A" "$lake_file" "$climate_data" "$subset_file" "$drainage_file" >> $output_log 2>> $error_log
-
 # Check the exit status of the Python script
 if [ $? -ne 0 ]; then
     echo "Python script failed to run." >> $error_log
