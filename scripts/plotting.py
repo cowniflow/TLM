@@ -9,6 +9,7 @@ import netCDF4 as nc
 import os
 import moviepy.video.io.ImageSequenceClip
 from matplotlib.ticker import FuncFormatter
+from tqdm import tqdm
 
 #%% directories
 
@@ -74,7 +75,7 @@ for e in range(1,e_nr+1):
             return (x/1000)
         formatter = FuncFormatter(yr)
 
-        for n in range(0,N,dt):
+        for n in tqdm(range(0,N,dt), desc="Plotting ensemble " + str(e),file=sys.stdout):
             fig, ax = plt.subplots(figsize=(10,10), dpi=200)
             plt.rcParams.update({'font.size': 18})
             ax.set_aspect('equal')
@@ -161,35 +162,45 @@ class MulticolorPatchHandler(object):
 # Create figure and subplots
 fig, axs = plt.subplots(2, 1, figsize=(10, 6.5),sharex=True)
 
-for n in range(e_nr):
-    axs[0].plot(ensemble['date'], ensemble['water_frac'][n], alpha=0.5, color = random_colors[n])
-    axs[1].plot(ensemble['date'], ensemble['drained_frac'][n], alpha=0.5, color = random_colors[n])
+if e_nr > 1:
 
-ensemble_mean_area_water_permanent = np.mean(ensemble['water_frac'], axis=0)
-ensemble_std = np.std(ensemble['water_frac'], axis = 0)
-axs[0].fill_between(ensemble['date'], ensemble_mean_area_water_permanent - ensemble_std, ensemble_mean_area_water_permanent + ensemble_std, color='black', alpha=0.2, label ='Standard Deviation')
-axs[0].plot(ensemble['date'], ensemble_mean_area_water_permanent, color='black', linewidth=2, label='Ensemble Mean')
-axs[0].set_ylabel('Water area fraction')
-axs[0].set_ylim(0, 1)
+    for n in range(e_nr):
+        axs[0].plot(ensemble['date'], ensemble['water_frac'][n], alpha=0.5, color = random_colors[n])
+        axs[1].plot(ensemble['date'], ensemble['drained_frac'][n], alpha=0.5, color = random_colors[n])
 
-ensemble_mean_area_land = np.mean(ensemble['drained_frac'], axis=0)
-ensemble_std_drained = np.std(ensemble['drained_frac'], axis = 0)
-axs[1].fill_between(ensemble['date'], ensemble_mean_area_land - ensemble_std_drained, ensemble_mean_area_land + ensemble_std_drained, color='black', alpha=0.2, label ='Standard Deviation')
-axs[1].plot(ensemble['date'], ensemble_mean_area_land, color='black', linewidth=2, label='Ensemble Mean')
-axs[1].set_ylabel('Drained area fraction')
-axs[1].set_ylim(0, 1)
-axs[1].set_xlabel('Year')
+    ensemble_mean_area_water_permanent = np.mean(ensemble['water_frac'], axis=0)
+    ensemble_std = np.std(ensemble['water_frac'], axis = 0)
+    axs[0].fill_between(ensemble['date'], ensemble_mean_area_water_permanent - ensemble_std, ensemble_mean_area_water_permanent + ensemble_std, color='black', alpha=0.2, label ='Standard Deviation')
+    axs[0].plot(ensemble['date'], ensemble_mean_area_water_permanent, color='black', linewidth=2, label='Ensemble Mean')
+    axs[0].set_ylabel('Water area fraction')
+    axs[0].set_ylim(0, 1)
 
-# Add legends to each subplot
-for ax in axs:
-    handles, labels = ax.get_legend_handles_labels()
-    handles.append(MulticolorPatch(random_colors))
-    labels.append("Ensemble Members")
-    ax.legend(handles, labels, loc='upper left', handler_map={MulticolorPatch: MulticolorPatchHandler()})
+    ensemble_mean_area_land = np.mean(ensemble['drained_frac'], axis=0)
+    ensemble_std_drained = np.std(ensemble['drained_frac'], axis = 0)
+    axs[1].fill_between(ensemble['date'], ensemble_mean_area_land - ensemble_std_drained, ensemble_mean_area_land + ensemble_std_drained, color='black', alpha=0.2, label ='Standard Deviation')
+    axs[1].plot(ensemble['date'], ensemble_mean_area_land, color='black', linewidth=2, label='Ensemble Mean')
+    axs[1].set_ylabel('Drained area fraction')
+    axs[1].set_ylim(0, 1)
+    axs[1].set_xlabel('Year')
+
+    # Add legends to each subplot
+    for ax in axs:
+        handles, labels = ax.get_legend_handles_labels()
+        handles.append(MulticolorPatch(random_colors))
+        labels.append("Ensemble Members")
+        ax.legend(handles, labels, loc='upper left', handler_map={MulticolorPatch: MulticolorPatchHandler()})
+
+elif e_nr == 1:
+    axs[0].plot(ensemble['date'], ensemble['water_frac'][0], color = 'black', linewidth=2, label='Water area fraction')
+    axs[1].plot(ensemble['date'], ensemble['drained_frac'][0], color = 'black', linewidth=2, label='Drained area fraction')
+    axs[0].set_ylabel('Water area fraction')
+    axs[0].set_ylim(0, 1)
+    axs[1].set_ylabel('Drained area fraction')
+    axs[1].set_ylim(0, 1)
+    axs[1].set_xlabel('Year')
 
 plt.tight_layout()
 plt.savefig("plots/ensemble_plot.png", dpi = 200,bbox_inches="tight")
-plt.show()
 
 #%%
 print("Plots created successfully!")

@@ -275,7 +275,7 @@ with open('parameter/clim_param_func.py', 'w') as f:
             combined_return_expression = 'return ' + str(value)
 
         # Write the combined function definition to the file
-        f.write(f'def func_{param_name}(tdd):\n')
+        f.write(f'def func_{param_name}(clim):\n')
         # Write the combined return expression
         f.write(f'    {combined_return_expression}\n\n')
 

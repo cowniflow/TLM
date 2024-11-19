@@ -17,19 +17,14 @@ drainage_file="input/Drainage_events_UTM54_North_40x40.shp"
 
 #output and error log files
 current_date=$(date +"%Y%m%d")
-output_log="parameterization_${current_date}_output.log"
-error_log="parameterization_${current_date}_error.log"
-echo "Output Log - $(date)" > $output_log
+error_log="tlm_${current_date}_error.log"
 echo "Error Log - $(date)" > $error_log
 
 # Run scripts to simulate and plot
-python3 scripts/parameterization.py "$A" "$lake_file" "$climate_data" "$subset_file" "$drainage_file" >> $output_log 2>> $error_log
+python3 scripts/parameterization.py "$A" "$lake_file" "$climate_data" "$subset_file" "$drainage_file" 2>> $error_log
 
 # Check the exit status of the Python script
 if [ $? -ne 0 ]; then
     echo "Python script failed to run." >> $error_log
 else
-    echo "Python script ran successfully." >> $output_log
-fi
-
-echo "Obtaining parameter from $lake_file"
+    echo "Obtaining parameter from $lake_file"

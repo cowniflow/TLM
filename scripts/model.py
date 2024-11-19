@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import xarray as xr
 import math
 import geopandas as gpd
+from tqdm import tqdm
 
 #%% directories
 
@@ -77,9 +78,9 @@ variant = sys.argv[1]  # Variant
 A = float(sys.argv[2])  
 frac_lim = float(sys.argv[3])  
 T = int(sys.argv[4]) 
-dt = float(sys.argv[5])  
-clim_param_func = sys.argv[6]  
-e_nr = int(sys.argv[7]) 
+dt = float(sys.argv[5])
+e_nr = int(sys.argv[6]) 
+clim_param_func = sys.argv[7]  
 ini_lakes = sys.argv[8]  
 subset_lakes = sys.argv[9]
 forcing = sys.argv[10]  
@@ -216,10 +217,7 @@ for e in range(1,e_nr + 1):
     lake_count[0] = len(x0_lake)
 
     # loop over time steps
-    for t in range(1,n):
-
-        # time step tracker
-        print("t = " + str(t))
+    for t in tqdm(range(1,n), desc="Simulating ensemble " + str(e),file=sys.stdout):
 
         idx_lake[t] = idx_lake[t-1][:]
         idx_dlb[t] = idx_dlb[t-1][:]
