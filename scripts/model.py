@@ -8,6 +8,12 @@ import xarray as xr
 import math
 import geopandas as gpd
 
+#%% directories
+
+# set working directory
+import os
+os.chdir(os.path.join( os.path.dirname( __file__ ), '..' ))
+
 #%% define functions
 
 # Geometric Brownian Motion
@@ -62,7 +68,8 @@ def merge(area_water, xcoord, ycoord):
 import sys  # Import sys to access command-line arguments
 
 # Check if the correct number of arguments is provided (5 arguments including the script name)
-if len(sys.argv) != 8:
+if len(sys.argv) != 11:
+    print(f"Error: Expected 10 arguments, but got {len(sys.argv) - 1}.", file=sys.stderr)
     sys.exit(1)  # Exit the script if the number of arguments is incorrect
 
 # Assign each command-line argument to a variable, converting to the appropriate type
@@ -79,12 +86,22 @@ forcing = sys.argv[10]
 
 #%% import parameter values and / or functions
 
-import importlib
+import importlib.util
+import sys
 
-module = importlib.import_module(clim_param_func)
+spec = importlib.util.spec_from_file_location("clim_param_func", clim_param_func)
+foo = importlib.util.module_from_spec(spec)
+sys.modules["clim_param_func"] = foo
+spec.loader.exec_module(foo)
 
-# Update the global namespace with the imported module's contents
-globals().update(module.__dict__)
+if variant == '1':
+        f_rate = foo.func_f_rate_sDist
+        d_rate = foo.func_d_rate_sDist
+elif variant == '2':
+        f_rate = foo.func_f_rate_sLake
+        d_rate = foo.func_d_rate_sLake
+func_sigma = foo.func_sigma
+func_mu = foo.func_mu
 
 #%% define spatial domain, temporal domain & time step
 
@@ -104,36 +121,36 @@ climvar = np.interp(new_time_points, original_time_points, climvar)
 
 #%% initialization
 
-if variant == '1':
-    f_rate = np.max(func_f_rate_sDist(climvar)) # maximum formation rate
-elif variant == '2':
-    f_rate = np.max(func_f_rate_sLake(climvar)) # maximum formation rate
-
+max_f = np.max(f_rate(climvar)) # maximum formation rate
 # generate max. number of potential new lakes
-form_n = math.ceil(A*1e6 * T * f_rate)
+form_n = math.ceil(A * T * max_f)
 
-# import / create initialization data (lake sizes, DLB sizes)
-lake_dataset = xr.open_dataset(ini_lakes)
-lakes_df = lake_dataset.to_dataframe()
-# Remove duplicates
-lakes_df = lakes_df.loc[~lakes_df.index.duplicated(keep='first')]
-# Convert the DataFrame back to a Dataset
-lakes_nc = lakes_df.to_xarray()
+if ini_lakes:
+    # import / create initialization data (lake sizes, DLB sizes)
+    lake_dataset = xr.open_dataset(ini_lakes)
+    lakes_df = lake_dataset.to_dataframe()
+    # Remove duplicates
+    lakes_df = lakes_df.loc[~lakes_df.index.duplicated(keep='first')]
+    # Convert the DataFrame back to a Dataset
+    lakes_nc = lakes_df.to_xarray()
 
-# OPTIONAL: get subset of lakes that are within the region
-if subset_lakes:
-    region = gpd.read_file(ini_lakes)
-    ID_list = list(region['id_geohash'])
-    ID_list_cleaned = []
-    for i in ID_list:
-        if any(ids == i for ids in lakes_nc.id_geohash.values):
-            ID_list_cleaned.append(i)
+    # OPTIONAL: get subset of lakes that are within the region
+    if subset_lakes:
+        region = gpd.read_file(subset_lakes)
+        ID_list = list(region['id_geohash'])
+        ID_list_cleaned = []
+        for i in ID_list:
+            if any(ids == i for ids in lakes_nc.id_geohash.values):
+                ID_list_cleaned.append(i)
+    else:
+        ID_list_cleaned = lakes_nc.id_geohash.values
+
+    x0_lake = lakes_nc['area_water_permanent'].sel(id_geohash=ID_list_cleaned,date='2000-01-01T00:00:00.000000000').values*0.01 # initial lake sizes
+    x0_DLB = []
 else:
-    ID_list_cleaned = lakes_nc.id_geohash.values
+    x0_lake = []
+    x0_DLB = []
 
-# create lake array
-x0_lake = lakes_nc['area_water_permanent'].sel(id_geohash=ID_list_cleaned,date='2000-01-01T00:00:00.000000000').values*0.01 # initial lake sizes
-x0_DLB = [] # initial DLB sizes
 lake_nr = len(x0_lake) + len(x0_DLB) + int(form_n)
 id = np.arange(0,lake_nr)
 id = id.astype(str)
@@ -241,21 +258,15 @@ for e in range(1,e_nr + 1):
             else:
                 age[t,l] = int(age[t-1,l]) + 1
 
-        # calculate d_rate
-        if variant == '1':
-            d_rate = func_d_rate_sDist(climvar[t-1])
-        elif variant == '2':
-            d_rate = func_d_rate_sLake(climvar[t-1])
-
         # abrupt drainage
         if len(idx_lake[t]) != 0:
             if d_rate == 0:
                 drain_nr = 0
             else:
                 if variant == '1':
-                    drain_nr = min(np.random.poisson(d_rate * A_disturbed[t-1]*1e-6),len(idx_lake[t]))
+                    drain_nr = min(np.random.poisson(d_rate(climvar[t-1]) * A_disturbed[t-1]*1e-6),len(idx_lake[t]))
                 elif variant == '2':
-                    drain_nr = min(np.random.poisson(((d_rate)*dt*np.nansum(area_water[t-1,:])*1e6)),len(idx_lake[t]))
+                    drain_nr = min(np.random.poisson(((d_rate(climvar[t-1]))*dt*np.nansum(area_water[t-1,:])*1e6)),len(idx_lake[t]))
             drain_arr[t] = drain_nr
             drain_idx = np.random.choice(idx_lake[t], drain_nr, replace=False).tolist()
             if len(drain_idx) != 0:
@@ -273,12 +284,6 @@ for e in range(1,e_nr + 1):
         for l in (idx_dlb[t] + idx_lake[t]):
             area_land[t,l] = max(area_land[t-1,l] + (area_water[t-1,l] - area_water[t,l]),0)
 
-        # calculate f_rate
-        if variant == '1':
-            f_rate = func_f_rate_sDist(climvar[t-1])
-        elif variant == '2':
-            f_rate = func_f_rate_sLake(climvar[t-1])
-
         # lake fromation
         possible_idx = [idx for idx in range(0,lake_nr)
                 if idx not in [*idx_lake[t],*idx_dlb[t]]]
@@ -287,9 +292,9 @@ for e in range(1,e_nr + 1):
             form_nr = 0
         else:
             if variant == '1':
-                form_nr = int(np.random.poisson((f_rate*A_undisturbed[t-1]*1e6*dt)))
+                form_nr = int(np.random.poisson((f_rate(climvar[t-1])*A_undisturbed[t-1]*1e6*dt)))
             elif variant == '2':
-                form_nr = int(np.random.poisson((f_rate*max((A - np.nansum(area_water[t-1,:]))*1e6,0)*dt)))
+                form_nr = int(np.random.poisson((f_rate(climvar[t-1])*max((A - np.nansum(area_water[t-1,:]))*1e6,0)*dt)))
         form_arr[t] = form_nr
         for l in possible_idx[:int(form_nr)]:
             area_water[t,l] = 1
@@ -323,7 +328,7 @@ for e in range(1,e_nr + 1):
     )
 
     # save output as netcdf file
-    lakes.to_netcdf('data/lakes_' + str(e) + '.nc')
+    lakes.to_netcdf('output/lakes_' + str(e) + '.nc')
     # close netcdf file
     lakes.close()
 
@@ -336,14 +341,14 @@ for e in range(1,e_nr + 1):
         area_drained_frac[t] = A_drained[t] / A
 
     # save numbers and area fractions as txt files
-    np.savetxt('data/area_water_frac_' + str(e) + '.txt', area_water_frac)
-    np.savetxt('data/area_drained_frac_' + str(e) + '.txt', area_drained_frac)
-    np.savetxt('data/lake_nr_' + str(e) + '.txt', lake_count)
+    np.savetxt('output/area_water_frac_' + str(e) + '.txt', area_water_frac)
+    np.savetxt('output/area_drained_frac_' + str(e) + '.txt', area_drained_frac)
+    np.savetxt('output/lake_nr_' + str(e) + '.txt', lake_count)
 
     # save arrays with number of new, drained and merged lakes
-    np.savetxt('data/drain_arr_' + str(e) + '.txt', drain_arr)
-    np.savetxt('data/form_arr_' + str(e) + '.txt', form_arr)
-    np.savetxt('data/merged_lakes_' + str(e) + '.txt', merged_lakes)
+    np.savetxt('output/drain_arr_' + str(e) + '.txt', drain_arr)
+    np.savetxt('output/form_arr_' + str(e) + '.txt', form_arr)
+    np.savetxt('output/merged_lakes_' + str(e) + '.txt', merged_lakes)
 
 #%%
 print('Simulation finished!')

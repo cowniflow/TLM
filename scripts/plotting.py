@@ -10,18 +10,25 @@ import os
 import moviepy.video.io.ImageSequenceClip
 from matplotlib.ticker import FuncFormatter
 
+#%% directories
+
+# set working directory
+import os
+os.chdir(os.path.join( os.path.dirname( __file__ ), '..' ))
 
 #%% Import the necessary parameter
 import sys  # Import sys to access command-line arguments
 
-# Check if the correct number of arguments is provided (5 arguments including the script name)
-if len(sys.argv) != 3:
+# Check if the correct number of arguments is provided
+if len(sys.argv) != 4:
+    print(f"Error: Expected 3 arguments, but got {len(sys.argv) - 1}.", file=sys.stderr)
     sys.exit(1)  # Exit the script if the number of arguments is incorrect
-
+    
 # Assign each command-line argument to a variable, converting to the appropriate type
 A_cell = float(sys.argv[1])  # Convert A_cell to float
 e_nr = int(sys.argv[2])  # Convert e_nr to integer
 dt = int(sys.argv[3])  # Convert dt to integer
+
 
 #%% Initialize dictionary with all ensemble members
 
@@ -68,7 +75,7 @@ for e in range(1,e_nr+1):
         formatter = FuncFormatter(yr)
 
         for n in range(0,N,dt):
-            fig, ax = plt.subplots(figsize=(10,10))
+            fig, ax = plt.subplots(figsize=(10,10), dpi=200)
             plt.rcParams.update({'font.size': 18})
             ax.set_aspect('equal')
             ax.set_xlim(0,(np.sqrt(A_cell)))
@@ -92,19 +99,26 @@ for e in range(1,e_nr+1):
             plt.xlabel("Distance / km",fontsize=18)
             plt.ylabel("Distance / km",fontsize=18)
             plt.savefig(path + "/circles/lakes_" + str(n) + ".png", dpi = 200,bbox_inches="tight")
-            plt.show()
             plt.close()
 
         # create gif of circles
         images = []
         for n in range(0,N,dt):
-            images.append(imageio.imread(path + "/circles/lakes_" + str(n) + ".png"))
+            img = imageio.imread(path + "/circles/lakes_" + str(n) + ".png")
+            if n == 0:
+                img_shape = img.shape
+            elif img.shape != img_shape:
+                raise ValueError(f"Image at index {n} has a different shape: {img.shape} compared to {img_shape}")
+            images.append(img)
         imageio.mimsave(path + '/lake_evolution.gif', images, duration = 1, loop=1)
 
         # create video of circles
         images = []
-        for n in range(0,N,dt):
-            images.append(imageio.imread(path + "/circles/lakes_" + str(n) + ".png"))
+        for n in range(0, N, dt):
+            img = imageio.imread(path + "/circles/lakes_" + str(n) + ".png")
+            if img.shape != img_shape:
+                raise ValueError(f"Image at index {n} has a different shape: {img.shape} compared to {img_shape}")
+            images.append(img)
 
         fps = 10
         clip = moviepy.video.io.ImageSequenceClip.ImageSequenceClip(images, fps=fps)
