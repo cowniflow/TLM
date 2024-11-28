@@ -19,7 +19,11 @@ This script contains the model code and simulates changes in thermokarst lake di
 
 ### plotting.py
 
-This script creates timeseries plot of lake and drained area fractions; as well as a gif of each ensemble run.
+This script creates timeseries plotq of lake and drained area fractions for the ensemble, including the ensemble mean and standard deviation. 
+
+### animations.py
+
+This script creates a folder with spatial plots (as .png files) of the lakes for each ensemble run and combines them into a gif and an mp4 file. 
 
 ## Running the scripts
 
@@ -30,7 +34,7 @@ Shell script to execute parameterization.py. Needs following input:
 - lake_file: path and file name for the data file with lake areas (.nc)
 - climate_data: path and file name for the file with data for one climate varialbe (.txt)
 - subset_file (OPTIONAL): path and file name for file with lake IDs for an area within lake_file area (.shp)
-- drainage_gile (OPTIONAL): path and file name for file with drainage events in form of Chen et al 2023 (.shp)
+- drainage_file (OPTIONAL): path and file name for file with drainage events in form of Chen et al 2023 (.shp)
 
 ### run_tlm.sh
 
@@ -42,9 +46,16 @@ Shell script to execute model.py and plotting.py. Needs following input:
 - dt: time step of simulation in years
 - e_nr: number of ensemble runs
 - par_script: path and file name for the python script with parameter functions (e.g. clim_param_func.py)
-- file_ini_lakes: path and file name for file with initialization data (.nc)
-- subset_lakes (OPTIONAL): path and file name for file with IDs for an area within file_ini_lakes (.shp)
+- file_ini_lakes (OPTIONAL): path and file name for file with initialization data (.nc); if left empty, the model will start with no lakes
+- subset_lakes (OPTIONAL): path and file name for file with IDs for an area within file_ini_lakes (.shp); if left empty, all lakes from file_ini_lakes will be used
 - file_forcing: path and file name with forcing data, i.e. one climate variable 
+
+### create_animations.sh
+
+Shell script to execute animations.py. Needs following input:
+- A: size of the simulated region
+- dt: time step of simulation in years
+- e_nr: number of ensemble runs
 
 ## Folder structure
 
@@ -62,16 +73,18 @@ Files of climate variables are stored here as txt files.
 
 ### output
 
-The output from tlm.py and plotting.py is stored here. These include:
+The output from tlm.py are stored here. These include:
 - lakes.nc: A netcdf file containing permanent water and land (i.e. drained) area, ages and type of the lake and DLB objects, as well as their id and coordinates at every time step.
 - area_water_frac.txt: A timeseries of the water area fraction.
 - area_drained_frac.tx: A timeseries of the drained area fraction.
 - lake_nr.txt: A timeseries of the number of lakes.
-- area_water_frac.png: A plot of the water area fraction of all ensemble runs over time.
-- area_frained_frac.png: A plot of the drained area fraction of all ensemble runs over time.
-- number.png: A plot of the lake number of all ensemble runs over time.
+
+### plots
+All plots that were created with plotting.py or animations.py are stored here. These include:
+- ensemble_plot.png: Timeseries of water area and drained fraction of the ensemble, including ensemble mean and standard deviation. 
 - circles: A folder with all .png files created for each ensemble.
 - run_{}.gif: A gif for each ensemble run, created from .png files from circles.
+- run_{}.mp4: A video file for each ensemble run, created from .png files from circles
 
 ## Documentation
 Some documentation has been set up for this project which you should be able to find hosted online
