@@ -75,32 +75,42 @@ for e in range(1,e_nr+1):
             return (x/1000)
         formatter = FuncFormatter(yr)
 
-        for n in tqdm(range(0,N,dt), desc="Plotting ensemble " + str(e),file=sys.stdout):
-            fig, ax = plt.subplots(figsize=(10,10), dpi=200)
-            plt.rcParams.update({'font.size': 18})
-            ax.set_aspect('equal')
-            ax.set_xlim(0,(np.sqrt(A_cell)))
-            ax.set_ylim(0,(np.sqrt(A_cell)))
-            ax.xaxis.set_major_formatter(formatter)
-            ax.yaxis.set_major_formatter(formatter)
-            d_rings = []
-            l_circles = []
-            blue_patch = mpatches.Patch(color='blue', label='water')
-            brown_patch = mpatches.Patch(color='brown', label='drained area since start of simulations')
-            for i in range(len(ds['id_geohash'])):
-                d_rings.append(plt.Circle((ds['xcoord'][n,i], ds['ycoord'][n,i]), np.sqrt(((ds['area_land'][n,i]) + ds['area_water_permanent'][n,i])/np.pi), color='brown',zorder=1))
-                l_circles.append(plt.Circle((ds['xcoord'][n,i], ds['ycoord'][n,i]), np.sqrt((ds['area_water_permanent'][n,i])/np.pi), color='blue', zorder=2))
-                ax.add_patch(d_rings[i])
-                ax.add_patch(l_circles[i])
-            if n == 0:
-                plt.legend(handles=[blue_patch], loc=1).set_zorder(102)
-            else:
-                plt.legend(handles=[blue_patch, brown_patch], loc=1).set_zorder(102)
-            plt.title("Lakes at year " + str(2000 + n),fontsize=18)
-            plt.xlabel("Distance / km",fontsize=18)
-            plt.ylabel("Distance / km",fontsize=18)
-            plt.savefig(path + "/circles/lakes_" + str(n) + ".png", dpi = 200,bbox_inches="tight")
-            plt.close()
+        plt.rcParams.update({'font.size': 18})
+    blue_patch = mpatches.Patch(color='blue', label='water')
+    brown_patch = mpatches.Patch(color='brown', label='drained area since start of simulations')
+
+    for n in tqdm(range(0,N,dt), desc="Plotting ensemble run " + str(e),file=sys.stdout):
+
+        fig, ax = plt.subplots(figsize=(10, 10), dpi=200)
+        ax.set_aspect('equal')
+        ax.set_xlim(0, np.sqrt(A_cell))
+        ax.set_ylim(0, np.sqrt(A_cell))
+        #ax.xaxis.set_major_formatter(formatter)
+        #ax.yaxis.set_major_formatter(formatter)
+
+        for i in range(len(ds['id_geohash'])):
+            area_land = ds['area_land'][n, i]
+            area_water = ds['area_water_permanent'][n, i]
+            if area_land > 0 or area_water > 0:
+                xcoord = ds['xcoord'][n, i]
+                ycoord = ds['ycoord'][n, i]
+                if area_land > 0:
+                    d_ring = plt.Circle((xcoord, ycoord), np.sqrt(area_land / np.pi), color='brown', zorder=1)
+                    ax.add_patch(d_ring)
+                if area_water > 0:
+                    l_circle = plt.Circle((xcoord, ycoord), np.sqrt(area_water / np.pi), color='blue', zorder=2)
+                    ax.add_patch(l_circle)
+
+        if n == 0:
+            plt.legend(handles=[blue_patch], loc=1).set_zorder(102)
+        else:
+            plt.legend(handles=[blue_patch, brown_patch], loc=1).set_zorder(102)
+
+        plt.title(f"Lakes at year {n}", fontsize=18)
+        plt.xlabel("Distance / km", fontsize=18)
+        plt.ylabel("Distance / km", fontsize=18)
+        plt.savefig(f"plots/idealized/oscillation/circles/lakes_{n}.png", dpi=200, bbox_inches="tight")
+        plt.close()
 
         # create gif of circles
         images = []
@@ -173,14 +183,12 @@ if e_nr > 1:
     axs[0].fill_between(ensemble['date'], ensemble_mean_area_water_permanent - ensemble_std, ensemble_mean_area_water_permanent + ensemble_std, color='black', alpha=0.2, label ='Standard Deviation')
     axs[0].plot(ensemble['date'], ensemble_mean_area_water_permanent, color='black', linewidth=2, label='Ensemble Mean')
     axs[0].set_ylabel('Water area fraction')
-    axs[0].set_ylim(0, 1)
 
     ensemble_mean_area_land = np.mean(ensemble['drained_frac'], axis=0)
     ensemble_std_drained = np.std(ensemble['drained_frac'], axis = 0)
     axs[1].fill_between(ensemble['date'], ensemble_mean_area_land - ensemble_std_drained, ensemble_mean_area_land + ensemble_std_drained, color='black', alpha=0.2, label ='Standard Deviation')
     axs[1].plot(ensemble['date'], ensemble_mean_area_land, color='black', linewidth=2, label='Ensemble Mean')
     axs[1].set_ylabel('Drained area fraction')
-    axs[1].set_ylim(0, 1)
     axs[1].set_xlabel('Year')
 
     # Add legends to each subplot
@@ -194,9 +202,7 @@ elif e_nr == 1:
     axs[0].plot(ensemble['date'], ensemble['water_frac'][0], color = 'black', linewidth=2, label='Water area fraction')
     axs[1].plot(ensemble['date'], ensemble['drained_frac'][0], color = 'black', linewidth=2, label='Drained area fraction')
     axs[0].set_ylabel('Water area fraction')
-    axs[0].set_ylim(0, 1)
     axs[1].set_ylabel('Drained area fraction')
-    axs[1].set_ylim(0, 1)
     axs[1].set_xlabel('Year')
 
 plt.tight_layout()
