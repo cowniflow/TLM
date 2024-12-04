@@ -9,9 +9,6 @@ This code was written by Constanze Reinken.
 
 This script calculates a timeseries of stochastic parameter (drift, volatility, formation rate, abrupt drainage rate) from the parameterization dataset. It finds the best fitting regression function between the parameter and a climate variable (e.g thaw degree days) out of a collection of common functions. It outputs the function and fitted parameter values in file clim_param_func.py.
 
-### clim_param_func.py
-
-This script contains functions and parameter describing the relationship between stochastic parameter (drift, volatility, formation rate, abrupt draianage rate) and a cliamte variable (e.g. thaw degree days). Obtained via parameterization.py.
 
 ### model.py
 
@@ -19,7 +16,7 @@ This script contains the model code and simulates changes in thermokarst lake di
 
 ### plotting.py
 
-This script creates timeseries plotq of lake and drained area fractions for the ensemble, including the ensemble mean and standard deviation. 
+This script creates timeseries plot of lake and drained area fractions for the ensemble, including the ensemble mean and standard deviation. 
 
 ### animations.py
 
@@ -65,7 +62,8 @@ Observational / remote sensing data on lake areas can be stored here and used di
 
 ### parameter
 
-The .py files that can be created by parameterization.py are stored here, as well as txt files of the calculate parameter timeseries. 
+The folder stores txt files of parameter timeseries as well as the file clim_param_func.py, that can be created via parameterization.py. The pythong script contains functions and parameter describing the relationship between stochastic parameter (drift, volatility, formation rate, abrupt draianage rate) and a cliamte variable (e.g. thaw degree days). It can be imported into model.py as a module. 
+ 
 
 ### forcing
 
