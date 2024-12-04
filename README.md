@@ -84,9 +84,8 @@ All plots that were created with plotting.py or animations.py are stored here. T
 - run_{}.gif: A gif for each ensemble run, created from .png files from circles.
 - run_{}.mp4: A video file for each ensemble run, created from .png files from circles
 
-## Documentation
-Some documentation has been set up for this project which you should be able to find hosted online
-here:
+## Paper
+The accompanying scientific paper can be found here: 
 ### https://
 
 
