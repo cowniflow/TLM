@@ -8,6 +8,7 @@ import xarray as xr
 import math
 import geopandas as gpd
 from tqdm import tqdm
+import sys
 
 #%% directories
 
@@ -66,8 +67,6 @@ def merge(area_water, xcoord, ycoord):
 
 #%% Import the necessary parameter, initialization data and forcing
 
-import sys  # Import sys to access command-line arguments
-
 # Check if the correct number of arguments is provided (5 arguments including the script name)
 if len(sys.argv) != 11:
     print(f"Error: Expected 10 arguments, but got {len(sys.argv) - 1}.", file=sys.stderr)
@@ -75,7 +74,7 @@ if len(sys.argv) != 11:
 
 # Assign each command-line argument to a variable, converting to the appropriate type
 variant = sys.argv[1]  # Variant
-A = float(sys.argv[2])  
+A = float(sys.argv[2]) 
 frac_lim = float(sys.argv[3])  
 T = int(sys.argv[4]) 
 dt = float(sys.argv[5])
@@ -146,9 +145,10 @@ if ini_lakes:
     else:
         ID_list_cleaned = lakes_nc.id_geohash.values
 
-    x0_lake = lakes_nc['area_water_permanent'].sel(id_geohash=ID_list_cleaned,date='2000-01-01T00:00:00.000000000').values*0.01 # initial lake sizes
+    x0_lake = lakes_nc['area_water_permanent'].sel(id_geohash=ID_list_cleaned,date='2000-01-01T00:00:00.000000000').values*10000 # initial lake sizes
     x0_DLB = []
 else:
+    print('No initialization data provided. Initializing with zero lakes.')
     x0_lake = []
     x0_DLB = []
 
@@ -217,7 +217,7 @@ for e in range(1,e_nr + 1):
     lake_count[0] = len(x0_lake)
 
     # loop over time steps
-    for t in tqdm(range(1,n), desc="Simulating ensemble " + str(e),file=sys.stdout):
+    for t in tqdm(range(1,n), desc="Simulating ensemble run " + str(e),file=sys.stdout):
 
         idx_lake[t] = idx_lake[t-1][:]
         idx_dlb[t] = idx_dlb[t-1][:]
@@ -243,10 +243,10 @@ for e in range(1,e_nr + 1):
         # expansion & gradual drainage
         for l in idx_lake[t]:
             area_water[t,l] = geometric_brownian(area_water[t,l], mu, sigma, dt) # calculate new lake area for next time step
-            if variant == '1':
+            if variant == '2':
                 if np.sum(area_water[t,:]) >= A_lim:  # Check if A_disturbed is below A_lim
                     area_water[t,l] = min(geometric_brownian(area_water[t,l], mu, sigma, dt), area_water[t-1,l])
-            if variant == '2':
+            if variant == '1':
                 if (A_disturbed[t-1]+(area_water[t,l]-area_water[t-1,l])) >= A_lim:
                     area_water[t,l] = min(geometric_brownian(area_water[t,l], mu, sigma, dt), area_water[t-1,l]) # calculate new lake area for next time step
             # track age & type
@@ -262,9 +262,9 @@ for e in range(1,e_nr + 1):
                 drain_nr = 0
             else:
                 if variant == '1':
-                    drain_nr = min(np.random.poisson(d_rate(climvar[t-1]) * A_disturbed[t-1]*1e-6),len(idx_lake[t]))
+                    drain_nr = min(np.random.poisson(d_rate(climvar[t-1]) * A_disturbed[t-1]),len(idx_lake[t]))
                 elif variant == '2':
-                    drain_nr = min(np.random.poisson(((d_rate(climvar[t-1]))*dt*np.nansum(area_water[t-1,:])*1e6)),len(idx_lake[t]))
+                    drain_nr = min(np.random.poisson(((d_rate(climvar[t-1]))*dt*np.nansum(area_water[t-1,:]))),len(idx_lake[t]))
             drain_arr[t] = drain_nr
             drain_idx = np.random.choice(idx_lake[t], drain_nr, replace=False).tolist()
             if len(drain_idx) != 0:
@@ -290,9 +290,9 @@ for e in range(1,e_nr + 1):
             form_nr = 0
         else:
             if variant == '1':
-                form_nr = int(np.random.poisson((f_rate(climvar[t-1])*A_undisturbed[t-1]*1e6*dt)))
+                form_nr = int(np.random.poisson((f_rate(climvar[t-1])*A_undisturbed[t-1]*dt)))
             elif variant == '2':
-                form_nr = int(np.random.poisson((f_rate(climvar[t-1])*max((A - np.nansum(area_water[t-1,:]))*1e6,0)*dt)))
+                form_nr = int(np.random.poisson((f_rate(climvar[t-1])*max((A - np.nansum(area_water[t-1,:])),0)*dt)))
         form_arr[t] = form_nr
         for l in possible_idx[:int(form_nr)]:
             area_water[t,l] = 1
@@ -349,5 +349,5 @@ for e in range(1,e_nr + 1):
     np.savetxt('output/merged_lakes_' + str(e) + '.txt', merged_lakes)
 
 #%%
-print('Simulation finished!')
+print('Simulations finished!')
 # %%

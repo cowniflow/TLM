@@ -62,7 +62,7 @@ Observational / remote sensing data on lake areas can be stored here and used di
 
 ### parameter
 
-The folder stores txt files of parameter timeseries as well as the file clim_param_func.py, that can be created via parameterization.py. The pythong script contains functions and parameter describing the relationship between stochastic parameter (drift, volatility, formation rate, abrupt draianage rate) and a cliamte variable (e.g. thaw degree days). It can be imported into model.py as a module. 
+The folder stores txt files of parameter timeseries as well as the file clim_param_func.py, that can be created via parameterization.py. The python script contains functions and parameter describing the relationship between stochastic parameter (drift, volatility, formation rate, abrupt draianage rate) and a cliamte variable (e.g. thaw degree days). It can be imported into model.py as a module. 
  
 
 ### forcing
@@ -97,3 +97,4 @@ The accompanying scientific paper can be found here:
 - Victor Brovkin
 - Ingmar Nitze
 - Philipp deVrese
+- Helena Bergstedt
