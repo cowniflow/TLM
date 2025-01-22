@@ -8,7 +8,6 @@ import geopandas as gpd
 import pandas as pd
 import xarray as xr
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from sklearn.metrics import r2_score
 import os

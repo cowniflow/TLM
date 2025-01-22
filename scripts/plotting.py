@@ -7,7 +7,6 @@ import numpy as np
 import netCDF4 as nc
 import os
 from matplotlib.ticker import FuncFormatter
-from tqdm import tqdm
 
 #%% directories
 

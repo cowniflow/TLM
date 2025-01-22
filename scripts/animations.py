@@ -70,8 +70,8 @@ for e in range(1,e_nr+1):
             ax.set_aspect('equal')
             ax.set_xlim(0, np.sqrt(A_cell))
             ax.set_ylim(0, np.sqrt(A_cell))
-            #ax.xaxis.set_major_formatter(formatter)
-            #ax.yaxis.set_major_formatter(formatter)
+            ax.xaxis.set_major_formatter(formatter)
+            ax.yaxis.set_major_formatter(formatter)
 
             for i in range(len(ds['id_geohash'])):
                 area_land = ds['area_land'][n, i]
