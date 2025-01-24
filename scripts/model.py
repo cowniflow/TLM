@@ -15,6 +15,9 @@ from tqdm import tqdm
 
 # set working directory
 os.chdir(os.path.join( os.path.dirname( __file__ ), '..' ))
+# create output folder
+if not os.path.exists('output_test'):
+    os.makedirs('output_test')
 
 #%% define functions
 
@@ -79,7 +82,7 @@ if len(sys.argv) != 11:
     sys.exit(1)  # Exit the script if the number of arguments is incorrect
 
 # Assign each command-line argument to a variable, converting to the appropriate type
-variant = sys.argv[1]  
+variant = sys.argv[1]
 A = float(sys.argv[2])
 frac_lim = float(sys.argv[3])
 T = int(sys.argv[4])
