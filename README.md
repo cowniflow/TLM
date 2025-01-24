@@ -24,6 +24,8 @@ This script creates a folder with spatial plots (as .png files) of the lakes for
 
 ## Running the scripts
 
+The python scripts can be executed using shell scripts that contain timestep, variant,  paths to initialization, forcing and parameter files, and other parameter. If the python scripts shall be executed from an IDE, the paths / parameter from the shell scripts need to be put into the code directly. 
+
 ### run_parametarization.sh
 
 Shell script to execute parameterization.py. Needs following input: 

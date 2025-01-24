@@ -4,12 +4,6 @@ channels:
     - defaults
 dependencies:
     - python>=3.9
-    - pytest
-    - NumPy>=1.18
-    - SciPy>=1.4
-    - Pandas>=1.0
-    - Patsy>=0.5.2
-    - sphinx
     - conda-forge::doxygen>=1.10.0
     - pip
     - pip:
