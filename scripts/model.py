@@ -2,105 +2,109 @@
 # by Constanze Reinken 2024
 
 #%% import packages
+import sys
+import os
+import math
+import importlib.util
 import numpy as np
 import xarray as xr
-import math
 import geopandas as gpd
 from tqdm import tqdm
-import sys
 
 #%% directories
 
 # set working directory
-import os
 os.chdir(os.path.join( os.path.dirname( __file__ ), '..' ))
 
 #%% define functions
 
 # Geometric Brownian Motion
-def geometric_brownian(x0, mu, sigma, dt):
-    x = x0 * np.exp((mu - ((sigma ** 2) / 2)) * dt
-                + sigma * np.random.normal(0, np.sqrt(dt)))
+def geometric_brownian(x0, drift, volatility, timestep):
+    x = x0 * np.exp((drift - ((volatility ** 2) / 2)) * timestep
+                + volatility * np.random.normal(0, np.sqrt(timestep)))
     return x
 
 
 # Merging Algorithm
-def merge(area_water, xcoord, ycoord):
+def merge(area, x, y):
 
-    area_water_new = area_water.copy()
-    xcoord_new = xcoord.copy()
-    ycoord_new = ycoord.copy()
+    area_new = area.copy()
+    x_new = x.copy()
+    y_new = y.copy()
 
     # select all circle objects with an area
-    idx_circles = [i for i in range(len(area_water)) if area_water[i] != 0 and not math.isnan(area_water[i])]
+    idx_circles = [i for i in range(len(area)) if area[i] != 0 
+                   and not math.isnan(area[i])]
 
     # loop through all circles
     if len(idx_circles) != 0:
-        for i in idx_circles: 
+        for i in idx_circles:
             for j in idx_circles:
 
-                if i != j and area_water_new[i] != 0 and area_water_new[j] != 0:     
+                if i != j and area_new[i] != 0 and area_new[j] != 0:
                     # calculate distance between centers
-                    dx = abs(xcoord_new[i] - xcoord_new[j])
-                    dy = abs(ycoord_new[i] - ycoord_new[j])
-                    dist = (dx**2 + dy**2)**0.5 
-                            
-                    # check for overlapping circles 
-                    if (dist + 0.01) < np.sqrt(area_water_new[i]/np.pi) + np.sqrt(area_water_new[j]/np.pi):
+                    dx = abs(x_new[i] - x_new[j])
+                    dy = abs(y_new[i] - y_new[j])
+                    dist = (dx**2 + dy**2)**0.5
+
+                    # check for overlapping circles
+                    if (dist + 0.01) < np.sqrt(area_new[i]/np.pi) + \
+                        np.sqrt(area_new[j]/np.pi):
 
                         # calculate new centre (centre of mass) and transfer area to the bigger one of the circles
-                        if area_water[j] >= area_water[i]:
-                            xcoord_new[j] = (1 / (area_water_new[j] + area_water_new[i])) * np.sum((area_water_new[j] * xcoord_new[j], area_water_new[i] * xcoord_new[i]))
-                            ycoord_new[j] = (1 / (area_water_new[j] + area_water_new[i])) * np.sum((area_water_new[j] * ycoord_new[j], area_water_new[i] * ycoord_new[i]))
-                            area_water_new[j] += area_water_new[i]
-                            area_water_new[i] = 0
+                        if area[j] >= area[i]:
+                            x_new[j] = (1 / (area_new[j] + area_new[i])) * \
+                                np.sum((area_new[j] * x_new[j], area_new[i] * x_new[i]))
+                            y_new[j] = (1 / (area_new[j] + area_new[i])) * \
+                                np.sum((area_new[j] * y_new[j], area_new[i] * y_new[i]))
+                            area_new[j] += area_new[i]
+                            area_new[i] = 0
 
                         else:
-                            xcoord_new[i] = (1 / (area_water_new[i] + area_water_new[j])) * np.sum((area_water_new[i] * xcoord_new[i], area_water_new[j] * xcoord_new[j]))
-                            ycoord_new[i] = (1 / (area_water_new[i] + area_water_new[j])) * np.sum((area_water_new[i] * ycoord_new[i], area_water_new[j] * ycoord_new[j]))
-                            area_water_new[i] += area_water_new[j]
-                            area_water_new[j] = 0
-                        
-    return area_water_new, xcoord_new, ycoord_new
+                            x_new[i] = (1 / (area_new[i] + area_new[j])) * \
+                                np.sum((area_new[i] * x_new[i], area_new[j] * x_new[j]))
+                            y_new[i] = (1 / (area_new[i] + area_new[j])) * \
+                                np.sum((area_new[i] * y_new[i], area_new[j] * y_new[j]))
+                            area_new[i] += area_new[j]
+                            area_new[j] = 0
+
+    return area_new, x_new, y_new
 
 
 #%% Import the necessary parameter, initialization data and forcing
 
-# Check if the correct number of arguments is provided (5 arguments including the script name)
+# Check if the correct number of arguments is provided (11 arguments including the script name)
 if len(sys.argv) != 11:
     print(f"Error: Expected 10 arguments, but got {len(sys.argv) - 1}.", file=sys.stderr)
     sys.exit(1)  # Exit the script if the number of arguments is incorrect
 
 # Assign each command-line argument to a variable, converting to the appropriate type
-variant = sys.argv[1]  # Variant
-A = float(sys.argv[2]) 
-frac_lim = float(sys.argv[3])  
-T = int(sys.argv[4]) 
-dt = float(sys.argv[5])
-e_nr = int(sys.argv[6]) 
-clim_param_func = sys.argv[7]  
-ini_lakes = sys.argv[8]  
+variant = sys.argv[1]  
+A = float(sys.argv[2])
+frac_lim = float(sys.argv[3])
+T = int(sys.argv[4])
+dt =  float(sys.argv[5])
+e_nr = int(sys.argv[6])
+clim_param_func = sys.argv[7]
+ini_lakes = sys.argv[8]
 subset_lakes = sys.argv[9]
-forcing = sys.argv[10]  
+forcing = sys.argv[10]
 
 #%% import parameter values and / or functions
 
-import importlib.util
-import sys
-
 spec = importlib.util.spec_from_file_location("clim_param_func", clim_param_func)
-foo = importlib.util.module_from_spec(spec)
-sys.modules["clim_param_func"] = foo
-spec.loader.exec_module(foo)
+param_module = importlib.util.module_from_spec(spec)
+sys.modules["clim_param_func"] = param_module
+spec.loader.exec_module(param_module)
 
 if variant == '1':
-        f_rate = foo.func_f_rate_sDist
-        d_rate = foo.func_d_rate_sDist
+    f_rate = param_module.func_f_rate_sDist
+    d_rate = param_module.func_d_rate_sDist
 elif variant == '2':
-        f_rate = foo.func_f_rate_sLake
-        d_rate = foo.func_d_rate_sLake
-func_sigma = foo.func_sigma
-func_mu = foo.func_mu
+    f_rate = param_module.func_f_rate_sLake
+    d_rate = param_module.func_d_rate_sLake
+func_sigma = param_module.func_sigma
+func_mu = param_module.func_mu
 
 #%% define spatial domain, temporal domain & time step
 
@@ -144,7 +148,9 @@ if ini_lakes:
     else:
         ID_list_cleaned = lakes_nc.id_geohash.values
 
-    x0_lake = lakes_nc['area_water_permanent'].sel(id_geohash=ID_list_cleaned,date='2000-01-01T00:00:00.000000000').values*10000 # initial lake sizes
+    # get initialization data
+    x0_lake = lakes_nc['area_water_permanent'].sel(id_geohash=ID_list_cleaned
+                                                   ,date='2000-01-01T00:00:00.000000000').values*10000
     x0_DLB = []
 else:
     print('No initialization data provided. Initializing with zero lakes.')
@@ -152,31 +158,31 @@ else:
     x0_DLB = []
 
 lake_nr = len(x0_lake) + len(x0_DLB) + int(form_n)
-id = np.arange(0,lake_nr)
-id = id.astype(str)
+idx = np.arange(0,lake_nr)
+idx = idx.astype(str)
 area_water = np.zeros((n,lake_nr))
 area_land = np.zeros((n,lake_nr))
 age = np.zeros((n,lake_nr),dtype=object)
-type = np.empty((n,lake_nr),dtype=object)
-type[:] = np.nan
+area_status = np.empty((n,lake_nr),dtype=object)
+area_status[:] = np.nan
 
 # initialize lake pool
-idx_lake = np.empty((n),dtype=object)
+idx_lake = np.empty(n,dtype=object)
 idx_lake[0] =  list(range(0,len(x0_lake))) # first entry: all indices from x0_lake
 
 # initialize DLB pool
-idx_dlb = np.empty((n),dtype=object)
+idx_dlb = np.empty(n,dtype=object)
 idx_dlb[0] =  list(range(len(x0_lake), len(x0_lake) + len(x0_DLB)))
 
 # fill first entry (time step) with data
 if len(x0_lake) != 0 or len(x0_DLB) != 0:
     area_water[0,:len(x0_lake)] = x0_lake
     area_land[0,:len(x0_lake)] = 0
-    type[0,:len(x0_lake)] = 'L' # 'L' for lake
+    area_status[0,:len(x0_lake)] = 'L' # 'L' for lake
 
     area_land[:,len(x0_lake):(len(x0_lake) + len(x0_DLB))] = x0_DLB
     area_water[:,len(x0_lake):(len(x0_lake) + len(x0_DLB))] = 0
-    type[:,len(x0_lake):(len(x0_lake) + len(x0_DLB))] = 'DLB' # 'DLB' for drained lake basin
+    area_status[:,len(x0_lake):(len(x0_lake) + len(x0_DLB))] = 'DLB' # 'DLB' for drained lake basin
 
     age[:,:len(x0_lake) + len(x0_DLB)] = 'nK' # 'nK' for not known
 
@@ -186,17 +192,17 @@ if len(x0_lake) != 0 or len(x0_DLB) != 0:
 for e in range(1,e_nr + 1):
 
     age = np.zeros((n,lake_nr),dtype=object)
-    type = np.empty((n,lake_nr),dtype=object)
-    type[:] = np.nan
+    area_status = np.empty((n,lake_nr),dtype=object)
+    area_status[:] = np.nan
     if len(x0_lake) != 0 or len(x0_DLB) != 0:
-        type[:,len(x0_lake):(len(x0_lake) + len(x0_DLB))] = 'DLB' # 'DLB' for drained lake basin
+        area_status[:,len(x0_lake):(len(x0_lake) + len(x0_DLB))] = 'DLB' # 'DLB' for drained lake basin
         age[:,:len(x0_lake) + len(x0_DLB)] = 'nK' # 'nK' for not known
 
     # initialize lakes coordinates
     xcoord = np.zeros((n,lake_nr))
     ycoord = np.zeros((n,lake_nr))
-    xcoord_ini = np.random.uniform(0,np.sqrt(A),(lake_nr))
-    ycoord_ini = np.random.uniform(0, np.sqrt(A),(lake_nr))
+    xcoord_ini = np.random.uniform(0,np.sqrt(A),lake_nr)
+    ycoord_ini = np.random.uniform(0, np.sqrt(A),lake_nr)
     for i in range(lake_nr):
         xcoord[:,i] = xcoord_ini[i]
         ycoord[:,i] = ycoord_ini[i]
@@ -230,7 +236,7 @@ for e in range(1,e_nr + 1):
             if area_water[t, l] == 0 and area_water[t-1, l] != 0:
                 area_water[t+1:, l] = area_water[t,l]
                 area_land[t+1:, l] = area_land[t,l]
-                type[t:, l] = "merged"
+                area_status[t:, l] = "merged"
                 age[t:, l] = age[t,l]
                 idx_lake[t].remove(l)
                 merged_lakes[t] += 1
@@ -241,15 +247,19 @@ for e in range(1,e_nr + 1):
 
         # expansion & gradual drainage
         for l in idx_lake[t]:
-            area_water[t,l] = geometric_brownian(area_water[t,l], mu, sigma, dt) # calculate new lake area for next time step
+            # calculate new lake area for next time step
+            area_water[t,l] = geometric_brownian(area_water[t,l], mu, sigma, dt)
+            # Check if A_disturbed / area_water is below A_lim
             if variant == '2':
-                if np.sum(area_water[t,:]) >= A_lim:  # Check if A_disturbed is below A_lim
-                    area_water[t,l] = min(geometric_brownian(area_water[t,l], mu, sigma, dt), area_water[t-1,l])
+                if np.sum(area_water[t,:]) >= A_lim: 
+                    area_water[t,l] = min(geometric_brownian(area_water[t,l], mu, sigma, dt), 
+                                          area_water[t-1,l])
             if variant == '1':
                 if (A_disturbed[t-1]+(area_water[t,l]-area_water[t-1,l])) >= A_lim:
-                    area_water[t,l] = min(geometric_brownian(area_water[t,l], mu, sigma, dt), area_water[t-1,l]) # calculate new lake area for next time step
+                    area_water[t,l] = min(geometric_brownian(area_water[t,l], mu, sigma, dt), 
+                                        area_water[t-1,l])
             # track age & type
-            type[t,l] = 'L'
+            area_status[t,l] = 'L'
             if age[t-1,l] == 'nK':
                 age[t,l] = 'nK'
             else:
@@ -261,9 +271,11 @@ for e in range(1,e_nr + 1):
                 drain_nr = 0
             else:
                 if variant == '1':
-                    drain_nr = min(np.random.poisson(d_rate(climvar[t-1]) * A_disturbed[t-1]),len(idx_lake[t]))
+                    drain_nr = min(np.random.poisson(d_rate(climvar[t-1]) * A_disturbed[t-1]),
+                                   len(idx_lake[t]))
                 elif variant == '2':
-                    drain_nr = min(np.random.poisson(((d_rate(climvar[t-1]))*dt*np.nansum(area_water[t-1,:]))),len(idx_lake[t]))
+                    drain_nr = min(np.random.poisson(((d_rate(climvar[t-1])) * dt *
+                                                    np.nansum(area_water[t-1,:]))),len(idx_lake[t]))
             drain_arr[t] = drain_nr
             drain_idx = np.random.choice(idx_lake[t], drain_nr, replace=False).tolist()
             if len(drain_idx) != 0:
@@ -272,8 +284,8 @@ for e in range(1,e_nr + 1):
                     idx_lake[t].remove(l)
                     idx_dlb[t].append(l)
                     # track age & type
-                    type[t,l] = 'DLB'
-                    if type[t-1,l] != 'DLB':
+                    area_status[t,l] = 'DLB'
+                    if area_status[t-1,l] != 'DLB':
                         age[t,l] = 0
                     else: age[t,l] = age[t-1,l] + 1
 
@@ -281,7 +293,7 @@ for e in range(1,e_nr + 1):
         for l in (idx_dlb[t] + idx_lake[t]):
             area_land[t,l] = max(area_land[t-1,l] + (area_water[t-1,l] - area_water[t,l]),0)
 
-        # lake fromation
+        # lake formation
         possible_idx = [idx for idx in range(0,lake_nr)
                 if idx not in [*idx_lake[t],*idx_dlb[t]]]
         new_idx = []
@@ -289,9 +301,10 @@ for e in range(1,e_nr + 1):
             form_nr = 0
         else:
             if variant == '1':
-                form_nr = int(np.random.poisson((f_rate(climvar[t-1])*A_undisturbed[t-1]*dt)))
+                form_nr = int(np.random.poisson((f_rate(climvar[t-1]) * A_undisturbed[t-1] * dt)))
             elif variant == '2':
-                form_nr = int(np.random.poisson((f_rate(climvar[t-1])*max((A - np.nansum(area_water[t-1,:])),0)*dt)))
+                form_nr = int(np.random.poisson((f_rate(climvar[t-1]) * \
+                                                max((A - np.nansum(area_water[t-1,:])),0) * dt)))
         form_arr[t] = form_nr
         for l in possible_idx[:int(form_nr)]:
             area_water[t,l] = 1
@@ -306,7 +319,7 @@ for e in range(1,e_nr + 1):
 
     # create the xarray Dataset with latitude and longitude included
     age = age.astype(str)
-    type = type.astype(str)
+    area_status = area_status.astype(str)
     lakes = xr.Dataset(
         {
             "area_water_permanent": (("date", "id_geohash"), area_water),
@@ -314,13 +327,13 @@ for e in range(1,e_nr + 1):
             "area_land": (("date", "id_geohash"), area_land),
             "area_nodata": (("date", "id_geohash"), np.zeros((n,lake_nr))),
             "age": (("date", "id_geohash"), age),
-            "type": (("date", "id_geohash"), type),
+            "type": (("date", "id_geohash"), area_status),
             "xcoord": (("date", "id_geohash"), xcoord),
             "ycoord": (("date", "id_geohash"), ycoord)
         },
         coords={
             "date": years,
-            "id_geohash": id
+            "id_geohash": idx
         }
     )
 
