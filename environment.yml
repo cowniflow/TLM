@@ -3,8 +3,9 @@ channels:
     - conda-forge
     - defaults
 dependencies:
-    - python>=3.9
-    - conda-forge::doxygen>=1.10.0
-    - pip
+    - conda>=4.13.0
+    - conda-build>=3.21.5
+    - python>=3.9.7.final.0
+    - pip>=23.3.1
     - pip:
       - -r requirements.txt
