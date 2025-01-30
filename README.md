@@ -2,6 +2,14 @@
 
 This code was written by Constanze Reinken.
 
+## Installation
+
+TLM requires a Python 3.x environment with several packages (see requierements.txt). The most convenient way would be to set up an Anaconda environment using environment.yml.
+
+```
+conda env create -f environment.yml
+```
+
 ## Scripts
 
 
@@ -100,7 +108,7 @@ The accompanying scientific paper is in preparation.
 
 
 ## Contributors
-- Constanze Reinken
+- Constanze Reinken (constanze.reinken@mpimet.mpg.de)
 
 ## Acknowledgements
 This work was supported by the European Research Council project Q-Arctic (grant no. 951288). It used resources of the Deutsches Klimarechenzentrum (DKRZ) granted by its Scientific Steering Committee (WLA) under project ID bm1236. Special thanks goes to Victor Brovkin, Philipp deVrese, Ingmar Nitze and Helena Bergstedt for providing data and scientific expertise that contributed to the model development, as well as to Tobias Stacke for his input on code structure and style. 
