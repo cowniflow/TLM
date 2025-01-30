@@ -86,11 +86,16 @@ All plots that were created with plotting.py or animations.py are stored here. T
 - run_{}.gif: A gif for each ensemble run, created from .png files from circles.
 - run_{}.mp4: A video file for each ensemble run, created from .png files from circles
 
+## Test Case Data
+
+In order to test the code, the included synthetic datasets can be used. They include a forcing dataset with random annual temperatures as well as a lake area dataset with random lake areas. The parameter functions that can be obtained from those datasets have already been calculated with parameterization.py and are contained in clim_param_func.py. 
+
 ##  Zenodo
 
 The code is published via Zenodo under doi: 
 
 ## Paper
+
 The accompanying scientific paper is in preparation. 
 
 

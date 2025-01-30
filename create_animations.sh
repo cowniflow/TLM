@@ -38,3 +38,5 @@ echo "Error Log - $(date)" > $error_log
 # Run scripts to simulate and plot
 python3 scripts/model.py "$variant" "$A" "$frac_lim" "$T" "$dt" "$e_nr" "$par_script" "$file_ini_lakes" "$subset_lakes" "$file_forcing" 2>> $error_log
 python3 scripts/plotting.py "$A" "$e_nr" "$dt" 2>> $error_log
+
+echo "Creating animations for "

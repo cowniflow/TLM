@@ -6,7 +6,7 @@ A=$(echo "40*40*1e6" | bc)  # m2
 # lake area data
 lake_file="input/UTM54_cleaned.nc"
 
-# cimate data
+# climate data
 climate_data="forcing/tdd_forcing.txt"
 
 # subset of IDs (OPTIONAL. If left empty, all IDs from lake_file will be used)
@@ -27,4 +27,5 @@ python3 scripts/parameterization.py "$A" "$lake_file" "$climate_data" "$subset_f
 if [ $? -ne 0 ]; then
     echo "Python script failed to run." >> $error_log
 else
-    echo "Obtaining parameter from $lake_file"
+    echo "Obtained parameter from $lake_file"
+fi
