@@ -60,7 +60,7 @@ Shell script to execute animations.py. Needs following input:
 
 ### input
 
-Observational / remote sensing data on lake areas can be stored here and used directly for parameterization.py and as an initialization dataset in model.py. 
+Observational / remote sensing data on lake areas can be stored here and used directly for parameterization.py and as an initialization dataset in model.py. The data needs to be a netcdf file. If a subset from the netcdf file shall be extracted, this can be done using a shapefile containing the corresponding object names or ids. 
 
 ### parameter
 
@@ -86,10 +86,12 @@ All plots that were created with plotting.py or animations.py are stored here. T
 - run_{}.gif: A gif for each ensemble run, created from .png files from circles.
 - run_{}.mp4: A video file for each ensemble run, created from .png files from circles
 
-## Paper
-The accompanying scientific paper can be found here: 
-### https://
+##  Zenodo
 
+The code is published via Zenodo under doi: 
+
+## Paper
+The accompanying scientific paper is in preparation. 
 
 
 ## Contributors
@@ -100,3 +102,4 @@ The accompanying scientific paper can be found here:
 - Ingmar Nitze
 - Philipp deVrese
 - Helena Bergstedt
+- Tobias Stacke
