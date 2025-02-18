@@ -72,20 +72,20 @@ All scripts require the packages \textit{numpy} and \textit{os} to be installed.
 
 |                     | model.py   | parameterization.py | plotting.py | animations.py |
 |---------------------|------------|---------------------|-------------|---------------|
-| extit{numpy}        | \checkmark | \checkmark          | \checkmark  | \checkmark    |
-| \textit{os}         | \checkmark | \checkmark          | \checkmark  | \checkmark    |
-| \textit{geopandas}  | \checkmark | \checkmark          |             |               |
-| \textit{imageio}    |            |                     |             | \checkmark    |
-| \textit{math}       | \checkmark |                     |             |               |
-| \textit{matplotlib} |            |                     | \checkmark  | \checkmark    |
-| \textit{moviepy}    |            |                     |             | \checkmark    |
-| \textit{netCDF4}    |            | \checkmark          |             | \checkmark    |
-| \textit{pandas}     |            | \checkmark          |             |               |
-| \textit{scipy}      |            | \checkmark          |             |               |
-| \textit{sklearn}    |            | \checkmark          |             |               |
-| \textit{sys}        | \checkmark |                     |             |               |
-| \textit{tqdm}       | \checkmark |                     |             | \checkmark    |
-| \textit{xarray}     | \checkmark | \checkmark          |             |               |
+| *numpy*      | :heavy_check_mark: | :heavy_check_mark:         | :heavy_check_mark:  | :heavy_check_mark:    |
+| *os*         | :heavy_check_mark: | :heavy_check_mark:          | :heavy_check_mark:  | :heavy_check_mark:    |
+| *geopandas*  | :heavy_check_mark: | :heavy_check_mark:          |             |               |
+| *imageio*    |            |                     |             | :heavy_check_mark:    |
+| *math*       | :heavy_check_mark: |                     |             |               |
+| *matplotlib* |            |                     | :heavy_check_mark:  | :heavy_check_mark:    |
+| *moviepy*    |            |                     |             | :heavy_check_mark:    |
+| *netCDF4*    |            | :heavy_check_mark:          |             | :heavy_check_mark:    |
+| *pandas*     |            | :heavy_check_mark:          |             |               |
+| *scipy*      |            | :heavy_check_mark:          |             |               |
+| *sklearn*    |            | :heavy_check_mark:          |             |               |
+| *sys*        | :heavy_check_mark: |                     |             |               |
+| *tqdm*       | :heavy_check_mark: |                     |             | :heavy_check_mark:    |
+| *xarray*     | :heavy_check_mark: | :heavy_check_mark:          |             |               |
 
 ## Running the scripts
 
