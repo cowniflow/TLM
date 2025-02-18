@@ -61,9 +61,11 @@ os.chdir(os.path.join( os.path.dirname( __file__ ), '..' ))
 
 # Check if the correct number of arguments is provided
 if len(sys.argv) != 6:
-    print(f"Error: Expected 3 arguments, but got {len(sys.argv) - 1}.", file=sys.stderr)
-    sys.exit(1)  # Exit the script if the number of arguments is incorrect
-    
+    print(f"Error: Expected 3 arguments, but got {len(sys.argv) - 1}.",
+        file=sys.stderr)
+    # Exit the script if the number of arguments is incorrect
+    sys.exit(1)
+
 # Assign each command-line argument to a variable, converting to the appropriate type
 A_cell = float(sys.argv[1])  # Convert A_cell to float
 e_nr = int(sys.argv[2])  # Convert e_nr to integer
@@ -88,22 +90,23 @@ for e in range(1,e_nr+1):
 
     ds = nc.Dataset(folder + 'lakes_' + str(e) + '.nc')
 
-    path = "plots/run_" + str(e)
+    PATH = "plots/run_" + str(e)
     os.makedirs("plots/run_" + str(e), exist_ok=True)
 
     # create circle plots
-    os.makedirs(path + "/circles", exist_ok=True)
+    os.makedirs(PATH + "/circles", exist_ok=True)
 
-    # turn x axis label from m into km
-    def yr(x,pos):
-        return (x/1000)
+    def yr(x, pos):
+        """turn x axis value from m to km"""
+        return x/1000
     formatter = FuncFormatter(yr)
 
     plt.rcParams.update({'font.size': 18})
     blue_patch = mpatches.Patch(color='blue', label='water')
     brown_patch = mpatches.Patch(color='brown', label='drained')
 
-    for n in tqdm(range(0,T,dt), desc="Create animations for ensemble run " + str(e),file=sys.stdout):
+    for n in tqdm(range(0,T,dt), desc="Create animations for ensemble run " +
+                  str(e),file=sys.stdout):
 
         fig, ax = plt.subplots(figsize=(10, 10), dpi=200)
         ax.set_aspect('equal')
@@ -119,10 +122,13 @@ for e in range(1,e_nr+1):
                 xcoord = ds['xcoord'][n, i]
                 ycoord = ds['ycoord'][n, i]
                 if area_land > 0:
-                    d_ring = plt.Circle((xcoord, ycoord), np.sqrt(area_land / np.pi), facecolor='peru', edgecolor='dimgrey', linewidth=1, zorder=1)
+                    d_ring = plt.Circle((xcoord, ycoord), np.sqrt(area_land / np.pi),
+                                        facecolor='peru', edgecolor='dimgrey',
+                                        linewidth=1, zorder=1)
                     ax.add_patch(d_ring)
                 if area_water > 0:
-                    l_circle = plt.Circle((xcoord, ycoord), np.sqrt(area_water / np.pi), color='blue', zorder=2)
+                    l_circle = plt.Circle((xcoord, ycoord), np.sqrt(area_water / np.pi),
+                                          color='blue', zorder=2)
                     ax.add_patch(l_circle)
 
         if n == 0:
@@ -133,28 +139,31 @@ for e in range(1,e_nr+1):
         plt.title(f"Lakes at year {n}", fontsize=18)
         plt.xlabel("Distance / km", fontsize=18)
         plt.ylabel("Distance / km", fontsize=18)
-        plt.savefig(path + f"/circles/lakes_{n}.png", dpi=200, bbox_inches="tight")
+        plt.savefig(PATH + f"/circles/lakes_{n}.png", dpi=200, bbox_inches="tight")
         plt.close()
 
     # create gif of circles
     images = []
     for n in range(0,T,dt):
-        img = imageio.imread(path + "/circles/lakes_" + str(n) + ".png")
+        img = imageio.imread(PATH + "/circles/lakes_" + str(n) + ".png")
         if n == 0:
             img_shape = img.shape
         elif img.shape != img_shape:
-            raise ValueError(f"Image at index {n} has a different shape: {img.shape} compared to {img_shape}")
+            raise ValueError(f"Image at index {n} has a different shape: \
+                             {img.shape} compared to {img_shape}")
         images.append(img)
-    imageio.mimsave(path + f'/run_{e}.gif', images, duration = 1, loop=1)
+    imageio.mimsave(PATH + f'/run_{e}.gif', images, duration = 1, loop=1)
 
     # create video of circles
     images = []
     for n in range(0, T, dt):
-        img = imageio.imread(path + "/circles/lakes_" + str(n) + ".png")
+        img = imageio.imread(PATH + "/circles/lakes_" + str(n) + ".png")
         if img.shape != img_shape:
-            raise ValueError(f"Image at index {n} has a different shape: {img.shape} compared to {img_shape}")
+            raise ValueError(f"Image at index {n} has a different shape: \
+                             {img.shape} compared to {img_shape}")
         images.append(img)
 
-    fps = 10
-    clip = moviepy.video.io.ImageSequenceClip.ImageSequenceClip(images, fps=fps)
-    clip.write_videofile(path + f'/run_{e}.mp4')
+    FPS = 10
+    clip = moviepy.video.io.ImageSequenceClip.ImageSequenceClip(images, fps=FPS)
+    clip.write_videofile(PATH + f'/run_{e}.mp4')
+    
