@@ -45,21 +45,11 @@ There are two model variants. Which variant is used, can be determined in run_tl
 
 * Variant 1
 
-In Variant 1, both the sum of water area $\overline{A}_{water}$ and the sum of drained area $\overline{A}_{drained}$ are subtracted from the area of the simulated region $A$ to obtain $A_f$ and both are added together to obtain $A_d$:
-
-$$
-A_{f,v1} &= A - (\overline{A_{water}} + \overline{A_{drained}})   
-A_{d,v1} &= (\overline{A_{water}} + \overline{A_{drained}}) 
-$$
+In Variant 1, both the sum of water area $A_{water}$ and the sum of drained area $A_{drained}$ constitute $A_d$ and are subtracted from the area of the simulated region to obtain $A_f$.
 
 * Variant 2
 
-In Variant 2, we only consider the $\overline{A_{water}}$:
-
-$$
-A_{f,v2} &= A - \overline{A_{water}}
-A_{d,v2} &= \overline{A_{water}} 
-$$
+In Variant 2, only the water area $A_{water}$ is considered for the scaling of formation and drainage probability. 
 
 
 ## Scripts
