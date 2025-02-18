@@ -23,7 +23,7 @@ $$
 P_f (k,A_f) = \frac{(\lambda_f A_f)^{k}}{k!} e^{- \lambda_f A_f} .
 $$
     
-* Expansion: The surface area of individual lakes change according to Geometric Brownian Motion. All lakes across a simulated area follow Geometric Brownian Motion with the same parameter drift $\mu$ and volatility $\sigma$, where $\sigma$ represents the random component and variety of lake behaviour. The individual lake area $a_i(t)$ at time $t$ is calculated with
+* Expansion: The surface area of individual lakes change according to Geometric Brownian Motion. All lakes across a simulated area follow Geometric Brownian Motion with the same parameter drift $\mu$ and volatility $\sigma$, where $\sigma$ represents the random component and variety of lake behaviour. The individual lake areas $a_i(t)$ at time $t$ are calculated with
 
 $$
 a_i(t) = a_i(t-1)e^{(\mu - \frac{1}{2}\sigma^2)t+\sigma B(t)} .
@@ -31,26 +31,45 @@ $$
     
 * Gradual Drainage: Geometric Brownian Motion can also lead to decreasing lake areas, either due to $\sigma$ or due to a negative drift value $\mu$. 
 
-* Abrupt Drainage: Abrupt drainage is represented using another Poisson process. A number of abrupt draining lakes is drawn from a Poisson process at each time step, where the parameter $\lambda_d$ is the abrupt drainage rate. The abruptly draining lakes are then randomly selected from the active lakes and reach a surface of zero within one timestep. The probability of $k$ drainage events during one year in $A_d$, which is the disturbed or water area (see 'Model Variants') within the system, is 
+* Abrupt Drainage: Abrupt drainage is represented using another Poisson process. A number of abruptly draining lakes is drawn from a Poisson process at each time step, where the parameter $\lambda_d$ is the abrupt drainage rate. The abruptly draining lakes are then randomly selected from the active lakes and reach a surface of zero within one timestep. The probability of $k$ drainage events during one year in $A_d$, which is the disturbed or water area (see 'Model Variants') within the system, is 
 
 $$
 P_d (k,A_d) = \frac{(\lambda_d A_d)^{k}}{k!} e^{- \lambda_d A_d} .
 $$
 
-Lakes merge as soon as they start to overlap. A merging algorithm checks for overlapping lakes at each timestep and, given that there is overlap, transfers the surface area of the smaller one to the larger one. It also determines the new centre coordinates of the resulting bigger lake by calculating the new centre of mass. 
+Lakes merge as soon as they start to overlap. A merging algorithm checks for overlapping lakes at each timestep and in case of overlap transfers the surface area of the smaller one to the larger one. It also determines the new centre coordinates of the resulting bigger lake by calculating the new centre of mass. 
 
 ### Model Variants
 
 There are two model variants. Which variant is used, can be determined in run_tlm.sh. 
 
 * Variant 1
-+ Variant 2
+
+In Variant 1, both the sum of water area $\overline{A_{water}}$ and the sum of drained area $\overline{A_{drained}}$ are subtracted from the area of the simulated region $A$ to obtain $A_f$ and both are added together to obtain $A_d$:
+
+$$
+A_{f,v1} &= A - (\overline{A_{water}} + \overline{A_{drained}})
+$$
+$$    
+A_{d,v1} &= (\overline{A_{water}} + \overline{A_{drained}}) 
+$$
+
+* Variant 2
+
+In Variant 2, we only consider the $\overline{A_{water}}$:
+
+$$
+A_{f,v2} &= A - \overline{A_{water}}
+$$
+A_{d,v2} &= \overline{A_{water}} 
+$$
+
 
 ## Scripts
 
 ###  parameterization.py
 
-This script calculates a timeseries of stochastic parameter (drift, volatility, formation rate, abrupt drainage rate) from the parameterization dataset. It finds the best fitting regression function between the parameter and a climate variable (e.g thaw degree days) out of a collection of common functions. It outputs the function and fitted parameter values in file clim_param_func.py.
+This script calculates a timeseries of the stochastic parameter (drift, volatility, formation rate, abrupt drainage rate) from the parameterization dataset. It finds the best fitting regression function between the parameter and a climate variable (e.g thaw degree days) out of a collection of common functions. It outputs the function and fitted parameter values in file clim_param_func.py.
 
 
 ### model.py
@@ -59,7 +78,7 @@ This script contains the model code and simulates changes in thermokarst lake di
 
 ### plotting.py
 
-This script creates timeseries plot of lake and drained area fractions for the ensemble, including the ensemble mean and standard deviation. 
+This script creates timeseries plots of lake and drained area fractions for the ensemble, including the ensemble mean and standard deviation. 
 
 ### animations.py
 
@@ -67,7 +86,7 @@ This script creates a folder with spatial plots (as .png files) of the lakes for
 
 ## Prerequisites 
  
-All scripts require the packages \textit{numpy} and \textit{os} to be installed. Additionally, each script needs the packages as listed in the table below. For the package versions that were used, please see requirements.txt or \ref{package_versions}. 
+All scripts require the packages *numpy* and *os* to be installed. Additionally, each script needs the packages as listed in the table below. For the package versions that were used, please see requirements.txt. 
 
 
 |                     | model.py   | parameterization.py | plotting.py | animations.py |
@@ -89,7 +108,7 @@ All scripts require the packages \textit{numpy} and \textit{os} to be installed.
 
 ## Running the scripts
 
-The python scripts can be executed using shell scripts that contain timestep, variant,  paths to initialization, forcing and parameter files, and other parameter. If the python scripts shall be executed from an IDE, the paths / parameter from the shell scripts need to be put into the code directly. 
+The python scripts can be executed using shell scripts that contain timestep, variant, paths to initialization data, forcing and parameter files, and other parameter. If the python scripts shall be executed from an IDE, the paths / parameter from the shell scripts need to be put into the code directly. 
 
 ### run_parametarization.sh
 
@@ -118,18 +137,20 @@ Shell script to execute model.py and plotting.py. Needs following input:
 
 Shell script to execute animations.py. Needs following input:
 - A: size of the simulated region
-- dt: time step of simulation in years
 - e_nr: number of ensemble runs
+- T: time span
+- dt: time step of simulation in years
+- folder_name: path to the lake data to be plotted
 
 ## Folder structure
 
 ### input
 
-Observational / remote sensing data on lake areas can be stored here and used directly for parameterization.py and as an initialization dataset in model.py. The data needs to be a netcdf file. If a subset from the netcdf file shall be extracted, this can be done using a shapefile containing the corresponding object names or ids. 
+Observational / remote sensing data on lake areas can be stored here and used directly for parameterization.py and as an initialization dataset in model.py. The data needs to be in form of a netcdf file. If a subset from the netcdf file shall be extracted, this can be done using a shapefile containing the corresponding object names or ids. 
 
 ### parameter
 
-The folder stores txt files of parameter timeseries as well as the file clim_param_func.py, that can be created via parameterization.py. The python script contains functions and parameter describing the relationship between stochastic parameter (drift, volatility, formation rate, abrupt draianage rate) and a cliamte variable (e.g. thaw degree days). It can be imported into model.py as a module. 
+The folder stores txt files of parameter timeseries as well as the file clim_param_func.py, that can be created via parameterization.py. The python script contains functions and parameter describing the relationship between stochastic parameter (drift, volatility, formation rate, abrupt draianage rate) and a climate variable (e.g. thaw degree days). It can be imported into model.py as a module. 
  
 ### forcing
 
@@ -137,7 +158,7 @@ Files of climate variables are stored here as txt files.
 
 ### output
 
-The output from tlm.py are stored here. These include:
+The output from tlm.py is stored here. This includes:
 - lakes.nc: A netcdf file containing permanent water and land (i.e. drained) area, ages and type of the lake and DLB objects, as well as their id and coordinates at every time step.
 - area_water_frac.txt: A timeseries of the water area fraction.
 - area_drained_frac.tx: A timeseries of the drained area fraction.
