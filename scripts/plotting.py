@@ -41,27 +41,28 @@ LICENSE:
 
 '''
 #%% import packages
+import os
+import sys
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np
 import netCDF4 as nc
-import os
 from matplotlib.ticker import FuncFormatter
+import matplotlib.colors as mcolors
+from matplotlib.collections import PatchCollection
 
 #%% directories
 
 # set working directory
-import os
 os.chdir(os.path.join( os.path.dirname( __file__ ), '..' ))
 
 #%% Import the necessary parameter
-import sys  # Import sys to access command-line arguments
 
 # Check if the correct number of arguments is provided
-if len(sys.argv) != 1:
+if len(sys.argv) != 2:
     print(f"Error: Expected 1 argument, but got {len(sys.argv) - 1}.", file=sys.stderr)
     sys.exit(1)  # Exit the script if the number of arguments is incorrect
-    
+
 # Assign each command-line argument to a variable, converting to the appropriate type
 e_nr = int(sys.argv[1])  # Convert e_nr to integer
 
@@ -96,18 +97,17 @@ for e in range(1,e_nr+1):
     ensemble['drained_frac'].append(area_drained_frac)
     ensemble['lake_nr'].append(lake_nr)
 
-    #for i in np.random.choice(e_nr, max(int(e_nr*0.3),1)):
-    for i in range(1,e_nr+1):
+    for e in range(1,e_nr+1):
 
-        path = "plots/run_" + str(e)
+        PATH = "plots/run_" + str(e)
         os.makedirs("plots/run_" + str(e), exist_ok=True)
 
         # create circle plots
-        os.makedirs(path + "/circles", exist_ok=True)
+        os.makedirs(PATH + "/circles", exist_ok=True)
 
-        # turn x axis label from m into km
         def yr(x,pos):
-            return (x/1000)
+            """turn x axis value from m to km"""
+            return x/1000
         formatter = FuncFormatter(yr)
 
         plt.rcParams.update({'font.size': 18})
@@ -117,26 +117,24 @@ for e in range(1,e_nr+1):
 
 #%% ensemble plot
 
-import matplotlib.colors as mcolors
-from matplotlib.collections import PatchCollection
-
-colors = list(mcolors.CSS4_COLORS.keys())
-random_colors = np.random.choice(colors, e_nr)
+color_list = list(mcolors.CSS4_COLORS.keys())
+random_colors = np.random.choice(color_list, e_nr)
 #random_colors = ['red', 'blue', 'green', 'orange', 'purple']
 
-# define an object that will be used by the legend
 class MulticolorPatch(object):
+    """Create a legend with colored patches for each ensemble member"""
     def __init__(self, colors):
         self.colors = colors
 
-# define a handler for the MulticolorPatch object
 class MulticolorPatchHandler(object):
-    def legend_artist(self, legend, orig_handle, fontsize, handlebox):
+    """Handler for the MulticolorPatch class"""
+    def legend_artist(self, orig_handle, handlebox):
+        """Create legend patch with colored patches for each ensemble member"""
         width, height = handlebox.width, handlebox.height
         patches = []
         for i, c in enumerate(orig_handle.colors):
-            patches.append(plt.Rectangle([width/len(orig_handle.colors) * i - handlebox.xdescent,
-                                          -handlebox.ydescent],
+            patches.append(plt.Rectangle([width/len(orig_handle.colors) * i -
+                                          handlebox.xdescent, -handlebox.ydescent],
                            width / len(orig_handle.colors),
                            height,
                            facecolor=c,
@@ -154,19 +152,27 @@ fig, axs = plt.subplots(2, 1, figsize=(10, 6.5),sharex=True)
 if e_nr > 1:
 
     for n in range(e_nr):
-        axs[0].plot(ensemble['date'], ensemble['water_frac'][n], alpha=0.5, color = random_colors[n])
-        axs[1].plot(ensemble['date'], ensemble['drained_frac'][n], alpha=0.5, color = random_colors[n])
+        axs[0].plot(ensemble['date'], ensemble['water_frac'][n], alpha=0.5,
+                    color = random_colors[n])
+        axs[1].plot(ensemble['date'], ensemble['drained_frac'][n], alpha=0.5,
+                    color = random_colors[n])
 
     ensemble_mean_area_water_permanent = np.mean(ensemble['water_frac'], axis=0)
     ensemble_std = np.std(ensemble['water_frac'], axis = 0)
-    axs[0].fill_between(ensemble['date'], ensemble_mean_area_water_permanent - ensemble_std, ensemble_mean_area_water_permanent + ensemble_std, color='black', alpha=0.2, label ='Standard Deviation')
-    axs[0].plot(ensemble['date'], ensemble_mean_area_water_permanent, color='black', linewidth=2, label='Ensemble Mean')
+    axs[0].fill_between(ensemble['date'], ensemble_mean_area_water_permanent -
+                        ensemble_std, ensemble_mean_area_water_permanent +
+                        ensemble_std, color='black', alpha=0.2, label ='Standard Deviation')
+    axs[0].plot(ensemble['date'], ensemble_mean_area_water_permanent, color='black',
+                linewidth=2, label='Ensemble Mean')
     axs[0].set_ylabel('Water area fraction')
 
     ensemble_mean_area_land = np.mean(ensemble['drained_frac'], axis=0)
     ensemble_std_drained = np.std(ensemble['drained_frac'], axis = 0)
-    axs[1].fill_between(ensemble['date'], ensemble_mean_area_land - ensemble_std_drained, ensemble_mean_area_land + ensemble_std_drained, color='black', alpha=0.2, label ='Standard Deviation')
-    axs[1].plot(ensemble['date'], ensemble_mean_area_land, color='black', linewidth=2, label='Ensemble Mean')
+    axs[1].fill_between(ensemble['date'], ensemble_mean_area_land - ensemble_std_drained,
+                        ensemble_mean_area_land + ensemble_std_drained, color='black',
+                        alpha=0.2, label ='Standard Deviation')
+    axs[1].plot(ensemble['date'], ensemble_mean_area_land, color='black',
+                linewidth=2, label='Ensemble Mean')
     axs[1].set_ylabel('Drained area fraction')
     axs[1].set_xlabel('Year')
 
@@ -175,11 +181,14 @@ if e_nr > 1:
         handles, labels = ax.get_legend_handles_labels()
         handles.append(MulticolorPatch(random_colors))
         labels.append("Ensemble Members")
-        ax.legend(handles, labels, loc='upper left', handler_map={MulticolorPatch: MulticolorPatchHandler()})
+        ax.legend(handles, labels, loc='upper left',
+                  handler_map={MulticolorPatch: MulticolorPatchHandler()})
 
 elif e_nr == 1:
-    axs[0].plot(ensemble['date'], ensemble['water_frac'][0], color = 'black', linewidth=2, label='Water area fraction')
-    axs[1].plot(ensemble['date'], ensemble['drained_frac'][0], color = 'black', linewidth=2, label='Drained area fraction')
+    axs[0].plot(ensemble['date'], ensemble['water_frac'][0], color = 'black',
+                linewidth=2, label='Water area fraction')
+    axs[1].plot(ensemble['date'], ensemble['drained_frac'][0], color = 'black',
+                linewidth=2, label='Drained area fraction')
     axs[0].set_ylabel('Water area fraction')
     axs[1].set_ylabel('Drained area fraction')
     axs[1].set_xlabel('Year')
@@ -189,4 +198,3 @@ plt.savefig("plots/ensemble_plot.png", dpi = 200,bbox_inches="tight")
 
 #%%
 print("Plots created successfully!")
-#%%
