@@ -43,13 +43,9 @@ Lakes merge as soon as they start to overlap. A merging algorithm checks for ove
 
 There are two model variants. Which variant is used, can be determined in run_tlm.sh. 
 
-* Variant 1
+* In Variant 1, both the sum of water area $A_{water}$ and the sum of drained area $A_{drained}$ constitute $A_d$ and are subtracted from the area of the simulated region to obtain $A_f$.
 
-In Variant 1, both the sum of water area $A_{water}$ and the sum of drained area $A_{drained}$ constitute $A_d$ and are subtracted from the area of the simulated region to obtain $A_f$.
-
-* Variant 2
-
-In Variant 2, only the water area $A_{water}$ is considered for the scaling of formation and drainage probability. 
+* In Variant 2, only the water area $A_{water}$ is considered for the scaling of formation and drainage probability. 
 
 
 ## Scripts
