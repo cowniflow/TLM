@@ -9,9 +9,44 @@ TLM requires a Python 3.x environment with several packages (see requierements.t
 ```
 conda env create -f environment.yml
 ```
+## Overview
+
+The Thermokarst Lake Model (TLM) is designed to simulate changes in thermokarst lake distributions in thermokarst-affected regions. 
+
+The model code is written in Python and can be executed using shell scripts that contain the necessary parameter values. Besides the model code that performs the simulations (model.py), there are also scripts to extract parameter values from observational data (parameterization.py), plot timeseries of simulated lake number as well as water and drained area (plotting.py), and create animations of a spatial representation of lake distribution (animations.py). 
+
+The model represents lakes as circular objects and uses stochastic processes to represent the main processes behind thermokarst lake dynamics: 
+
+* Formation: A Poisson process supplies the number of new lakes for each timestep (usually a year). More specifically, the number of new lakes is drawn at each timestep from a Poisson distribution with parameter $\lambda_f$, which is the formation rate. Each new lake gets two random centre coordinates. The probability of $k$ thermokarst depressions appearing during one year in $A_f$, which is the area available for formation, is
+
+$$
+P_f (k,A_f) = \frac{(\lambda_f A_f)^{k}}{k!} e^{- \lambda_f A_f} .
+$$
+    
+* Expansion: The surface area of individual lakes change according to Geometric Brownian Motion. All lakes across a simulated area follow Geometric Brownian Motion with the same parameter drift $\mu$ and volatility $\sigma$, where $\sigma$ represents the random component and variety of lake behaviour. The individual lake area $a_i(t)$ at time $t$ is calculated with
+
+$$
+a_i(t) = a_i(t-1)e^{(\mu - \frac{1}{2}\sigma^2)t+\sigma B(t)} .
+$$
+    
+* Gradual Drainage: Geometric Brownian Motion can also lead to decreasing lake areas, either due to $\sigma$ or due to a negative drift value $\mu$. 
+
+* Abrupt Drainage: Abrupt drainage is represented using another Poisson process. A number of abrupt draining lakes is drawn from a Poisson process at each time step, where the parameter $\lambda_d$ is the abrupt drainage rate. The abruptly draining lakes are then randomly selected from the active lakes and reach a surface of zero within one timestep. The probability of $k$ drainage events during one year in $A_d$, which is the disturbed or water area (see 'Model Variants') within the system, is 
+
+$$
+P_d (k,A_d) = \frac{(\lambda_d A_d)^{k}}{k!} e^{- \lambda_d A_d} .
+$$
+
+Lakes merge as soon as they start to overlap. A merging algorithm checks for overlapping lakes at each timestep and, given that there is overlap, transfers the surface area of the smaller one to the larger one. It also determines the new centre coordinates of the resulting bigger lake by calculating the new centre of mass. 
+
+### Model Variants
+
+There are two model variants. Which variant is used, can be determined in run_tlm.sh. 
+
+* Variant 1
++ Variant 2
 
 ## Scripts
-
 
 ###  parameterization.py
 
@@ -29,6 +64,28 @@ This script creates timeseries plot of lake and drained area fractions for the e
 ### animations.py
 
 This script creates a folder with spatial plots (as .png files) of the lakes for each ensemble run and combines them into a gif and an mp4 file. 
+
+## Prerequisites 
+ 
+All scripts require the packages \textit{numpy} and \textit{os} to be installed. Additionally, each script needs the packages as listed in the table below. For the package versions that were used, please see requirements.txt or \ref{package_versions}. 
+
+
+|                     | model.py   | parameterization.py | plotting.py | animations.py |
+|---------------------|------------|---------------------|-------------|---------------|
+| extit{numpy}        | \checkmark | \checkmark          | \checkmark  | \checkmark    |
+| \textit{os}         | \checkmark | \checkmark          | \checkmark  | \checkmark    |
+| \textit{geopandas}  | \checkmark | \checkmark          |             |               |
+| \textit{imageio}    |            |                     |             | \checkmark    |
+| \textit{math}       | \checkmark |                     |             |               |
+| \textit{matplotlib} |            |                     | \checkmark  | \checkmark    |
+| \textit{moviepy}    |            |                     |             | \checkmark    |
+| \textit{netCDF4}    |            | \checkmark          |             | \checkmark    |
+| \textit{pandas}     |            | \checkmark          |             |               |
+| \textit{scipy}      |            | \checkmark          |             |               |
+| \textit{sklearn}    |            | \checkmark          |             |               |
+| \textit{sys}        | \checkmark |                     |             |               |
+| \textit{tqdm}       | \checkmark |                     |             | \checkmark    |
+| \textit{xarray}     | \checkmark | \checkmark          |             |               |
 
 ## Running the scripts
 
@@ -74,7 +131,6 @@ Observational / remote sensing data on lake areas can be stored here and used di
 
 The folder stores txt files of parameter timeseries as well as the file clim_param_func.py, that can be created via parameterization.py. The python script contains functions and parameter describing the relationship between stochastic parameter (drift, volatility, formation rate, abrupt draianage rate) and a cliamte variable (e.g. thaw degree days). It can be imported into model.py as a module. 
  
-
 ### forcing
 
 Files of climate variables are stored here as txt files.
@@ -96,11 +152,9 @@ All plots that were created with plotting.py or animations.py are stored here. T
 
 ## Test Case Data
 
-In order to test the code, the included synthetic datasets can be used. They include a forcing dataset with random annual temperatures as well as a lake area dataset with random lake areas. The parameter functions that can be obtained from those datasets have already been calculated with parameterization.py and are contained in clim_param_func.py. 
 
 ##  Zenodo
 
-The code is published via Zenodo under doi: 
 
 ## Paper
 
