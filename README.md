@@ -4,7 +4,7 @@ This code was written by Constanze Reinken.
 
 ## Installation
 
-TLM requires a Python 3.x environment with several packages (see requierements.txt). The most convenient way would be to set up an Anaconda environment using environment.yml.
+TLM requires a Python 3.x environment with several packages (see requirements.txt). The most convenient way would be to set up an Anaconda environment using environment.yml.
 
 ```
 conda env create -f environment.yml
@@ -26,8 +26,10 @@ $$
 * Expansion: The surface area of individual lakes change according to Geometric Brownian Motion. All lakes across a simulated area follow Geometric Brownian Motion with the same parameter drift $\mu$ and volatility $\sigma$, where $\sigma$ represents the random component and variety of lake behaviour. The individual lake areas $a_i(t)$ at time $t$ are calculated with
 
 $$
-a_i(t) = a_i(t-1)e^{(\mu - \frac{1}{2}\sigma^2)t+\sigma B(t)} .
+a_i(t) = a_i(t-1)e^{(\mu - \frac{1}{2}\sigma^2)t+\sigma B(t)} ,
 $$
+
+where $B(t)$ is regular Brownian Motion. 
     
 * Gradual Drainage: Geometric Brownian Motion can also lead to decreasing lake areas, either due to $\sigma$ or due to a negative drift value $\mu$. 
 
@@ -154,16 +156,13 @@ All plots that were created with plotting.py or animations.py are stored here. T
 - run_{}.gif: A gif for each ensemble run, created from .png files from circles.
 - run_{}.mp4: A video file for each ensemble run, created from .png files from circles
 
-## Test Case Data
+## TODO Test Case Data
 
-
-##  Zenodo
-
+## TODO Zenodo
 
 ## Paper
 
 The accompanying scientific paper is in preparation. 
-
 
 ## Contributors
 - Constanze Reinken (constanze.reinken@mpimet.mpg.de)
