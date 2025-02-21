@@ -1,18 +1,18 @@
 def func_f_rate_sDist(clim):
-    return 2.8475506493010397e-11
+    return 0.0
 
 def func_f_rate_sLake(clim):
-    return 2.8475506493010397e-11
+    return 0.0
 
 def func_d_rate_sDist(clim):
-    return 1.6777300360796126e-09
+    return 0.0
 
 def func_d_rate_sLake(clim):
-    return 1.684761447714019e-09
+    return 0.0
 
 def func_mu(clim):
-    return 0.013205450108390797
+    return 8.619305428069595e-06 * tdd + 0.00030575538714333074
 
 def func_sigma(clim):
-    return 0.07877065456847765
+    return 0.0001845406477196251
 
