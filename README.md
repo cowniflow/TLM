@@ -71,7 +71,7 @@ This script creates a folder with spatial plots (as .png files) of the lakes for
 
 ## Prerequisites 
  
-All scripts require the packages *numpy* and *os* to be installed. Additionally, each script needs the packages as listed in the table below. For the package versions that were used, please see requirements.txt. 
+All scripts require the packages *numpy* and *os* to be installed. Additionally, each script needs the packages as listed in the table below. 
 
 
 |                     | model.py   | parameterization.py | plotting.py | animations.py |
