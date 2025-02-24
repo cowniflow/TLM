@@ -71,7 +71,7 @@ This script creates a folder with spatial plots (as .png files) of the lakes for
 
 ## Prerequisites 
  
-All scripts require the packages *numpy* and *os* to be installed. Additionally, each script needs the packages as listed in the table below. 
+All scripts require the packages *numpy* and *os* to be installed. Additionally, each script needs the packages as listed in the table below. All requirements (packages and dependencies) are contained in environment.yml. 
 
 
 |                     | model.py   | parameterization.py | plotting.py | animations.py |
@@ -156,7 +156,9 @@ All plots that were created with plotting.py or animations.py are stored here. T
 - run_{}.gif: A gif for each ensemble run, created from .png files from circles.
 - run_{}.mp4: A video file for each ensemble run, created from .png files from circles
 
-## TODO Test Case Data
+## Test Case Data
+
+A synthetic dataset and forcing was created to test the model with. Parameter, model simulations and corresponding plots based on these files are contained as well. 
 
 ## TODO Zenodo
 
