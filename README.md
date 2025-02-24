@@ -158,7 +158,7 @@ All plots that were created with plotting.py or animations.py are stored here. T
 
 ## Test Case Data
 
-A synthetic dataset and forcing was created to test the model with. Parameter, model simulations and corresponding plots based on these files are contained as well. 
+A synthetic dataset and forcing was created, which the model can be tested with. This repository also contained the corresponsing parameter, model output and plots. 
 
 ## TODO Zenodo
 
