@@ -7,7 +7,7 @@ A=$(echo "40*40*1e6" | bc) # m2
 e_nr=1
 
 # Time span
-T=1000
+T=100
 
 # time step
 dt=1

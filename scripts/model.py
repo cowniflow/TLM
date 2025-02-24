@@ -205,8 +205,8 @@ if ini_lakes:
 
     # get initialization data
     x0_lake = lakes_nc['area_water_permanent'].sel(
-        id_geohash=ID_list_cleaned,date='2000-01-01T00:00:00.000000000'
-        ).values*10000
+        id_geohash=ID_list_cleaned).isel(date=0
+        ).values #*10000
     x0_DLB = []
 else:
     print('No initialization data provided. Initializing with zero lakes.')
@@ -286,8 +286,7 @@ for e in range(1,e_nr + 1):
         idx_dlb[t] = idx_dlb[t-1][:]
 
         # merging lakes
-        #area_water[t], xcoord[t], ycoord[t] = area_water[t-1], xcoord[t-1],
-        # ycoord[t-1]
+        #area_water[t], xcoord[t], ycoord[t] = area_water[t-1], xcoord[t-1], ycoord[t-1]
         area_water[t], xcoord[t], ycoord[t] = merge(area_water[t-1],
                                                     xcoord[t-1], ycoord[t-1])
 

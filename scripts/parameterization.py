@@ -56,26 +56,35 @@ from sklearn.metrics import r2_score
 
 # set working directory
 os.chdir(os.path.join( os.path.dirname( __file__ ), '..' ))
-#%% Area of study region
 
-# Check if the correct number of arguments is provided (5 arguments including
-# the script name)
-if len(sys.argv) != 6:
-    print(f"Error: Expected 5 arguments, but got {len(sys.argv) - 1}.",
-          file=sys.stderr)
-    sys.exit(1)  # Exit the script if the number of arguments is incorrect
+#%% temp params
 
-# Assign each command-line argument to a variable, converting to the
-# appropriate type
-try:
-    A = float(sys.argv[1])
-    lake_file = sys.argv[2]
-    climate_data = sys.argv[3]
-    subset_file = sys.argv[4]
-    drainage_file = sys.argv[5]
-except ValueError as e:
-    print(f"Error: {e}", file=sys.stderr)
-    sys.exit(1)
+A = 40*40*1e6
+lake_file = 'input/synthetic_lake_data.nc'
+climate_data = 'forcing/synthetic_tdd.txt'
+subset_file = None
+drainage_file = None
+
+# #%% Area of study region
+
+# # Check if the correct number of arguments is provided (5 arguments including
+# # the script name)
+# if len(sys.argv) != 6:
+#     print(f"Error: Expected 5 arguments, but got {len(sys.argv) - 1}.",
+#           file=sys.stderr)
+#     sys.exit(1)  # Exit the script if the number of arguments is incorrect
+
+# # Assign each command-line argument to a variable, converting to the
+# # appropriate type
+# try:
+#     A = float(sys.argv[1])
+#     lake_file = sys.argv[2]
+#     climate_data = sys.argv[3]
+#     subset_file = sys.argv[4]
+#     drainage_file = sys.argv[5]
+# except ValueError as e:
+#     print(f"Error: {e}", file=sys.stderr)
+#     sys.exit(1)
 
 #%% import timeseries dataset
 
@@ -87,7 +96,7 @@ lakes_df = lakes_df.loc[~lakes_df.index.duplicated(keep='first')]
 
 # Convert the DataFrame back to a Dataset
 lakes = lakes_df.to_xarray()
-years = lakes.date.values[16:]
+years = lakes.date.values
 
 #%% OPTIONAL: import IDs for subset of the dataset via shapefile
 
@@ -190,16 +199,24 @@ d_rate_sDist = d_rate[1:] / (A*(drained_frac[:-1] + lake_frac[:-1]))
 f_rate_sLake = f_rate[1:] / (A-(A*lake_frac[:-1]))
 f_rate_sDist = f_rate[1:] / (A-(A*(drained_frac[:-1] + lake_frac[:-1])))
 
+# Add np.nan as the first entry to f_rate_sDist
+f_rate_sDist = np.insert(f_rate_sDist, 0, np.nan)
+f_rate_sLake = np.insert(f_rate_sLake, 0, np.nan)
+d_rate_sDist = np.insert(d_rate_sDist, 0, np.nan)
+d_rate_sLake = np.insert(d_rate_sLake, 0, np.nan)
+
 #%% OPTIONAL: import drainage event data (Chen et al 2023)
 
 if drainage_file:
     drainage_events = gpd.read_file(drainage_file)
     drainage_events = drainage_events.where(drainage_events.Drain_pct > 0.9)
 
+    time_period = len(drainage_events.DrainYear.unique())
+
     drain_timeseries = np.zeros(len(years))
-    for i in range(2000, 2021):
-        drain_timeseries[i - 2000] = len(drainage_events.loc[drainage_events.
-                                                             DrainYear == i])
+    for i in range(0, time_period):
+        drain_timeseries[i] = len(drainage_events.loc[drainage_events.
+                                                      DrainYear == i])
 
     # scale d_rate by lake and disturbed area
 
@@ -219,35 +236,25 @@ np.savetxt('parameter/d_rate_sLake.txt', d_rate_sLake)
 
 #%% import climate data
 
-climvar = np.loadtxt(climate_data)[16:]
-
-#%% kernel smoothing of f_ and d_rate
-
-# f_rate
-f_rate_running_mean = np.convolve(f_rate_sDist[:-2], np.ones(3)/3, mode='valid')
-# d_rate
-d_rate_running_mean = np.convolve(d_rate_sDist[:-2], np.ones(3)/3, mode='valid')
+climvar = np.loadtxt(climate_data)
 
 #%% create nan masks for mu and sigma
 
 # mu
-mask = ~np.isnan(mu[1:-2]) & ~np.isinf(mu[1:-2])
+mask = ~np.isnan(mu) & ~np.isinf(mu)
 # sigma
-mask = ~np.isnan(sigma[1:-2])
+mask = ~np.isnan(sigma)
 
 
 #%% Define functions to fit
 
 def linear(x, a,b):
-    """Linear function."""
     return a * x + b
 
 def exponential(x, a,b):
-    """Exponential function."""
     return a * np.exp(b * x)
 
 def logarithmic(x, a,b):
-    """Logarithmic function."""
     return a * np.log(x) + b
 
 functions = [exponential, logarithmic, linear]
@@ -256,40 +263,40 @@ functions = [exponential, logarithmic, linear]
 #%% fit different functions
 
 best_fit = {}
-params = {'f_rate_sDist': f_rate_sDist[:-2], 'f_rate_sLake': f_rate_sLake[:-2],
-          'd_rate_sDist': d_rate_sDist[:-2], 'd_rate_sLake': d_rate_sLake[:-2], 
-          "mu": mu[1:-2], "sigma": sigma[1:-2]}
+params = {'f_rate_sDist': f_rate_sDist, 'f_rate_sLake': f_rate_sLake,
+          'd_rate_sDist': d_rate_sDist, 'd_rate_sLake': d_rate_sLake, 
+          "mu": mu, "sigma": sigma}
 
 for param_name, param in params.items():
-    best_func_tdd = None
-    best_popt_tdd = None
-    best_r2_tdd = -np.inf
+    best_func = None
+    best_popt = None
+    best_r2 = -np.inf
 
     for func in functions:
         # Create a mask for non-nan values
         mask = ~np.isnan(param) & ~np.isinf(param)
         # Perform the regression
-        popt, pcov = curve_fit(func, climvar[1:][mask], param[mask],
-                               full_output=False)
+        popt, pcov = curve_fit(func, climvar[mask][:-1], param[mask][1:])
         # Calculate the y values of the fitted function
-        y_fit = func(climvar[1:][mask], *popt)
+        y_fit = func(climvar[mask][:-1], *popt)
         # Calculate the R-squared value
-        r2 = r2_score(param[mask], y_fit)
+        r2 = r2_score(param[mask][1:], y_fit)
 
-        if r2 < 0.5:
+        non_zero_mask = mask & (param != 0)
+        if r2 < 0.5 or np.sum(non_zero_mask) < 3:
             continue
 
-        elif r2 > best_r2_tdd:
-            best_r2_tdd = r2
-            best_func_tdd = func
-            best_popt_tdd = popt
+        elif r2 > best_r2:
+            best_r2 = r2
+            best_func = func
+            best_popt = popt
 
-    best_fit[param_name] = [best_func_tdd, best_popt_tdd, best_r2_tdd]
+    best_fit[param_name] = [best_func, best_popt, best_r2]
 
 
 #%% save parameter and function in file
 
-with open('parameter/clim_param_func_utm.py', 'w', encoding="utf-8") as f:
+with open('parameter/clim_param_func.py', 'w', encoding="utf-8") as f:
 
     for param_name, param in params.items():
 
@@ -309,8 +316,8 @@ with open('parameter/clim_param_func_utm.py', 'w', encoding="utf-8") as f:
                 func1_return_expression = func1_return_expression.replace(
                     'c', (str(best_fit[param_name][1][2])))
             func1_return_expression = func1_return_expression.replace('x',
-                                                                      'tdd')
-            COMBINED_RETURN_EXPRESSION = func1_return_expression
+                                                                      'clim')
+            COMBINED_RETURN_EXPRESSION = 'return ' + func1_return_expression
         # if no fitting function was found, use a constant the parameter
         else:
 
@@ -360,3 +367,5 @@ f.close()
 #%%
 
 print('Parameterization completed.')
+
+# %%

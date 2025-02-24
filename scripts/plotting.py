@@ -90,7 +90,7 @@ for e in range(1,e_nr+1):
 
     # fill ensemble dictionary with data from the current ensemble member
     if ensemble['date'] is None:
-        ensemble['date'] = np.arange(2000, 2000 + N)
+        ensemble['date'] = np.arange(0, 0 + N)
 
     # Compute the mean across id_geohash and append to the ensemble dictionary
     ensemble['water_frac'].append(area_water_frac)
@@ -101,9 +101,6 @@ for e in range(1,e_nr+1):
 
         PATH = "plots/run_" + str(e)
         os.makedirs("plots/run_" + str(e), exist_ok=True)
-
-        # create circle plots
-        os.makedirs(PATH + "/circles", exist_ok=True)
 
         def yr(x,pos):
             """turn x axis value from m to km"""
@@ -128,7 +125,7 @@ class MulticolorPatch(object):
 
 class MulticolorPatchHandler(object):
     """Handler for the MulticolorPatch class"""
-    def legend_artist(self, orig_handle, handlebox):
+    def legend_artist(self, legend, orig_handle, fontsize, handlebox):
         """Create legend patch with colored patches for each ensemble member"""
         width, height = handlebox.width, handlebox.height
         patches = []
