@@ -88,7 +88,7 @@ lakes_df = lakes_df.loc[~lakes_df.index.duplicated(keep='first')]
 
 # Convert the DataFrame back to a Dataset
 lakes = lakes_df.to_xarray()
-years = lakes.date.values[16:]
+years = lakes.date.values
 
 #%% OPTIONAL: import IDs for subset of the dataset via shapefile
 
