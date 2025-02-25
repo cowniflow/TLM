@@ -57,7 +57,7 @@ from sklearn.metrics import r2_score
 # set working directory
 os.chdir(os.path.join( os.path.dirname( __file__ ), '..' ))
 
-#%% Area of study region
+#%% import params from shell file
 
 # Check if the correct number of arguments is provided (5 arguments including
 # the script name)
@@ -88,7 +88,7 @@ lakes_df = lakes_df.loc[~lakes_df.index.duplicated(keep='first')]
 
 # Convert the DataFrame back to a Dataset
 lakes = lakes_df.to_xarray()
-years = lakes.date.values
+years = lakes.date.values[16:]
 
 #%% OPTIONAL: import IDs for subset of the dataset via shapefile
 
@@ -107,10 +107,10 @@ if subset_file:
 
 #%% OPTIONAL: convert ha to m^2
 
-lakes['area_water_permanent'] *= 10000
-lakes['area_water_seasonal'] *= 10000
-lakes['area_land'] *= 10000
-lakes['area_nodata'] *= 10000
+# lakes['area_water_permanent'] *= 10000
+# lakes['area_water_seasonal'] *= 10000
+# lakes['area_land'] *= 10000
+# lakes['area_nodata'] *= 10000
 
 
 #%% clean dataset and extract parameter estimates
@@ -219,12 +219,12 @@ if drainage_file:
 
 #%% save parameter timeseries in txt files
 
-# np.savetxt('parameter/mu.txt', mu)
-# np.savetxt('parameter/sigma.txt', sigma)
-# np.savetxt('parameter/f_rate_sDist.txt', f_rate_sDist)
-# np.savetxt('parameter/d_rate_sDist.txt', d_rate_sDist)
-# np.savetxt('parameter/f_rate_sLake.txt', f_rate_sLake)
-# np.savetxt('parameter/d_rate_sLake.txt', d_rate_sLake)
+np.savetxt('parameter/mu.txt', mu)
+np.savetxt('parameter/sigma.txt', sigma)
+np.savetxt('parameter/f_rate_sDist.txt', f_rate_sDist)
+np.savetxt('parameter/d_rate_sDist.txt', d_rate_sDist)
+np.savetxt('parameter/f_rate_sLake.txt', f_rate_sLake)
+np.savetxt('parameter/d_rate_sLake.txt', d_rate_sLake)
 
 #%% import climate data
 
