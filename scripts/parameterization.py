@@ -88,7 +88,8 @@ lakes_df = lakes_df.loc[~lakes_df.index.duplicated(keep='first')]
 
 # Convert the DataFrame back to a Dataset
 lakes = lakes_df.to_xarray()
-years = lakes.date.values
+datetime = lakes.date.values
+years = lakes.date.dt.year.values
 
 #%% OPTIONAL: import IDs for subset of the dataset via shapefile
 
@@ -103,7 +104,7 @@ if subset_file:
         if any(ids == i for ids in lakes.id_geohash.values):
             ID_list_cleaned.append(i)
 
-    lakes = lakes.sel(id_geohash = ID_list_cleaned, date = years)
+    lakes = lakes.sel(id_geohash = ID_list_cleaned, date = datetime)
 
 #%% OPTIONAL: convert ha to m^2
 
@@ -111,7 +112,6 @@ if subset_file:
 # lakes['area_water_seasonal'] *= 10000
 # lakes['area_land'] *= 10000
 # lakes['area_nodata'] *= 10000
-
 
 #%% clean dataset and extract parameter estimates
 
@@ -136,11 +136,11 @@ for t in range(1,len(years)):
 
         # if more than 10% of the data is missing, set to nan
         polygon_area = lakes.area_water_permanent.sel(
-            id_geohash=i,date=years[t]) + lakes.area_water_seasonal.sel(
-                id_geohash=i,date=years[t]) + lakes.area_nodata.sel(
-                    id_geohash=i,date=years[t]) + lakes.area_land.sel(
-                        id_geohash=i,date=years[t])
-        if lakes.sel(date=years[t-1],id_geohash = i).area_nodata > 0:
+            id_geohash=i,date=datetime[t]) + lakes.area_water_seasonal.sel(
+                id_geohash=i,date=datetime[t]) + lakes.area_nodata.sel(
+                    id_geohash=i,date=datetime[t]) + lakes.area_land.sel(
+                        id_geohash=i,date=datetime[t])
+        if lakes.sel(date=datetime[t-1],id_geohash = i).area_nodata > 0:
             lakes['area_water_permanent'][lakes.id_geohash.values.tolist().
                                           index(i), t-1] = np.nan
             lakes['area_water_seasonal'][lakes.id_geohash.values.tolist().
@@ -151,37 +151,37 @@ for t in range(1,len(years)):
         # extract formation and drainage rate
         if all(x == 0 for x in lakes.sel(id_geohash=i).area_water_permanent.
                values[:t]) and (lakes.area_water_permanent.sel(
-                   id_geohash=i,date=years[t]) > 0) :
+                   id_geohash=i,date=datetime[t]) > 0) :
             f_rate[t] += 1
             excluded_ids.add(i)
         if t != len(years) and all(x == 0 for x in lakes.sel(id_geohash=i).
                                    area_water_permanent.values[t:]) and \
                                     (lakes.area_water_permanent.sel(
-                                        id_geohash=i,date=years[t-1]) > \
+                                        id_geohash=i,date=datetime[t-1]) > \
                                             polygon_area * 0.5):
             d_rate[t] += 1
             excluded_ids.add(i)
 
         if i not in excluded_ids and lakes.area_water_permanent.sel(
-            id_geohash=i,date=years[t-1]).values > 0:
+            id_geohash=i,date=datetime[t-1]).values > 0:
             log_returns[t, lakes.id_geohash.values.tolist().index(i)] = \
                 np.log(lakes.area_water_permanent.sel(
-                    id_geohash=i,date=years[t]).values /
+                    id_geohash=i,date=datetime[t]).values /
                     lakes.area_water_permanent.sel(id_geohash=i,
-                                                   date=years[t-1]).values)
+                                                   date=datetime[t-1]).values)
 
-    lake_frac[t] = np.nansum(lakes.area_water_permanent.sel(date=years[t]).
+    lake_frac[t] = np.nansum(lakes.area_water_permanent.sel(date=datetime[t]).
                              values) / A
-    drained_frac[t] = (np.nansum(lakes.area_land.sel(date=years[t-1]).values) /
+    drained_frac[t] = (np.nansum(lakes.area_land.sel(date=datetime[t-1]).values) /
                        A) + max(np.nansum((lakes.area_land.sel(
-                           id_geohash=i,date=years[t]).values - lakes.area_land.
-                           sel(id_geohash=i,date=years[t-1]).values)) / A ,0)
+                           id_geohash=i,date=datetime[t]).values - lakes.area_land.
+                           sel(id_geohash=i,date=datetime[t-1]).values)) / A ,0)
     log_returns[t] = np.nan_to_num(log_returns[t], nan=np.nan, posinf=np.nan,
                                    neginf=np.nan)
     mu[t] = np.nanmean(log_returns[t]) + (0.5*np.nanstd(log_returns[t]) **2)
     sigma[t] = np.nanstd(log_returns[t])
 
-lake_frac[0] = np.nansum(lakes.area_water_permanent.sel(date=years[0]).
+lake_frac[0] = np.nansum(lakes.area_water_permanent.sel(date=datetime[0]).
                          values) / A
 
 # scale f_ and d_rate rates by lake and disturbed area
@@ -201,21 +201,28 @@ d_rate_sLake = np.insert(d_rate_sLake, 0, np.nan)
 
 if drainage_file:
     drainage_events = gpd.read_file(drainage_file)
-    drainage_events = drainage_events.where(drainage_events.Drain_pct > 0.9)
+    drainage_events = drainage_events.where(drainage_events.Drain_pct > 0.9
+                                            ).dropna()
 
-    time_period = len(drainage_events.DrainYear.unique())
+    drain_years = drainage_events.DrainYear.values
+    unique_years, counts = np.unique(drain_years, return_counts=True)
+    unique_years = unique_years.astype(int)
+    drain_years_counts = np.column_stack((unique_years, counts))
 
     drain_timeseries = np.zeros(len(years))
-    for i in range(0, time_period):
-        drain_timeseries[i] = len(drainage_events.loc[drainage_events.
-                                                      DrainYear == i])
+    for i in range(0, len(drain_years_counts)):
+        if drain_years_counts[i, 0] in years:
+            drain_timeseries[years.tolist().index(drain_years_counts[i, 0])] = \
+                drain_years_counts[i, 1]
 
     # scale d_rate by lake and disturbed area
-
     d_rate_sDist = drain_timeseries[1:] / (A*(drained_frac[:-1] +
                                               lake_frac[:-1]))
     d_rate_sLake = drain_timeseries[1:] / (A * lake_frac[:-1])
 
+    # OPTIONAL, if dataset too short: Add np.nan as the last entry to d_rate_sDist
+    # d_rate_sDist = np.append(d_rate_sDist, np.nan)
+    # d_rate_sLake = np.append(d_rate_sLake, np.nan)
 
 #%% save parameter timeseries in txt files
 
@@ -266,15 +273,15 @@ for param_name, param in params.items():
 
     for func in functions:
         # Create a mask for non-nan values
-        mask = ~np.isnan(param) & ~np.isinf(param)
+        mask = ~np.isnan(param[1:]) & ~np.isinf(param[1:])
         # Perform the regression
-        popt, pcov = curve_fit(func, climvar[mask][:-1], param[mask][1:])
+        popt, pcov = curve_fit(func, climvar[:-1][mask], param[1:][mask])
         # Calculate the y values of the fitted function
-        y_fit = func(climvar[mask][:-1], *popt)
+        y_fit = func(climvar[:-1][mask], *popt)
         # Calculate the R-squared value
-        r2 = r2_score(param[mask][1:], y_fit)
+        r2 = r2_score(param[1:][mask], y_fit)
 
-        non_zero_mask = mask & (param != 0)
+        non_zero_mask = mask & (param[1:] != 0)
         if r2 < 0.5 or np.sum(non_zero_mask) < 3:
             continue
 
@@ -288,7 +295,7 @@ for param_name, param in params.items():
 
 #%% save parameter and function in file
 
-with open('parameter/clim_param_func.py', 'w', encoding="utf-8") as f:
+with open('parameter/clim_param_func_test.py', 'w', encoding="utf-8") as f:
 
     for param_name, param in params.items():
 
