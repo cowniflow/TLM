@@ -57,34 +57,26 @@ from sklearn.metrics import r2_score
 # set working directory
 os.chdir(os.path.join( os.path.dirname( __file__ ), '..' ))
 
-#%% temp params
+#%% Area of study region
 
-A = 40*40*1e6
-lake_file = 'output/lakes_1.nc'
-climate_data = 'forcing/synthetic_tdd.txt'
-subset_file = None
-drainage_file = None
+# Check if the correct number of arguments is provided (5 arguments including
+# the script name)
+if len(sys.argv) != 6:
+    print(f"Error: Expected 5 arguments, but got {len(sys.argv) - 1}.",
+          file=sys.stderr)
+    sys.exit(1)  # Exit the script if the number of arguments is incorrect
 
-# #%% Area of study region
-
-# # Check if the correct number of arguments is provided (5 arguments including
-# # the script name)
-# if len(sys.argv) != 6:
-#     print(f"Error: Expected 5 arguments, but got {len(sys.argv) - 1}.",
-#           file=sys.stderr)
-#     sys.exit(1)  # Exit the script if the number of arguments is incorrect
-
-# # Assign each command-line argument to a variable, converting to the
-# # appropriate type
-# try:
-#     A = float(sys.argv[1])
-#     lake_file = sys.argv[2]
-#     climate_data = sys.argv[3]
-#     subset_file = sys.argv[4]
-#     drainage_file = sys.argv[5]
-# except ValueError as e:
-#     print(f"Error: {e}", file=sys.stderr)
-#     sys.exit(1)
+# Assign each command-line argument to a variable, converting to the
+# appropriate type
+try:
+    A = float(sys.argv[1])
+    lake_file = sys.argv[2]
+    climate_data = sys.argv[3]
+    subset_file = sys.argv[4]
+    drainage_file = sys.argv[5]
+except ValueError as e:
+    print(f"Error: {e}", file=sys.stderr)
+    sys.exit(1)
 
 #%% import timeseries dataset
 
@@ -115,10 +107,10 @@ if subset_file:
 
 #%% OPTIONAL: convert ha to m^2
 
-# lakes['area_water_permanent'] *= 10000
-# lakes['area_water_seasonal'] *= 10000
-# lakes['area_land'] *= 10000
-# lakes['area_nodata'] *= 10000
+lakes['area_water_permanent'] *= 10000
+lakes['area_water_seasonal'] *= 10000
+lakes['area_land'] *= 10000
+lakes['area_nodata'] *= 10000
 
 
 #%% clean dataset and extract parameter estimates
@@ -227,12 +219,12 @@ if drainage_file:
 
 #%% save parameter timeseries in txt files
 
-np.savetxt('parameter/mu.txt', mu)
-np.savetxt('parameter/sigma.txt', sigma)
-np.savetxt('parameter/f_rate_sDist.txt', f_rate_sDist)
-np.savetxt('parameter/d_rate_sDist.txt', d_rate_sDist)
-np.savetxt('parameter/f_rate_sLake.txt', f_rate_sLake)
-np.savetxt('parameter/d_rate_sLake.txt', d_rate_sLake)
+# np.savetxt('parameter/mu.txt', mu)
+# np.savetxt('parameter/sigma.txt', sigma)
+# np.savetxt('parameter/f_rate_sDist.txt', f_rate_sDist)
+# np.savetxt('parameter/d_rate_sDist.txt', d_rate_sDist)
+# np.savetxt('parameter/f_rate_sLake.txt', f_rate_sLake)
+# np.savetxt('parameter/d_rate_sLake.txt', d_rate_sLake)
 
 #%% import climate data
 
