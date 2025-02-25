@@ -54,7 +54,7 @@ There are two model variants. Which variant is used, can be determined in run_tl
 
 ###  parameterization.py
 
-This script calculates a timeseries of the stochastic parameter (drift, volatility, formation rate, abrupt drainage rate) from the parameterization dataset. It finds the best fitting regression function between the parameter and a climate variable (e.g thaw degree days) out of a collection of common functions. It outputs the function and fitted parameter values in file clim_param_func.py.
+This script calculates a timeseries of the stochastic parameter (drift, volatility, formation rate, abrupt drainage rate) from the parameterization dataset. It finds the best fitting regression function between the parameter and a climate variable (e.g thaw degree days) out of a collection of common functions. It outputs the function and fitted parameter values in file clim_param_func.py. The parameter estimates represents how lake area or number have changed from the previous year to the current year. As the default, this value is compared to the climate variable in the previous year. This can be changed in the script by indexing the climate variable differently. Make sure that the datasets span the necessary years. 
 
 
 ### model.py
@@ -158,7 +158,7 @@ All plots that were created with plotting.py or animations.py are stored here. T
 
 ## Test Case Data
 
-A synthetic dataset and forcing was created, which the model can be tested with. This repository also contained the corresponsing parameter, model output and plots. 
+A synthetic lake dataset and forcing data were created, which the model can be tested with. The repository also contains the corresponsing parameter, model output and plots. 
 
 ## TODO Zenodo
 
