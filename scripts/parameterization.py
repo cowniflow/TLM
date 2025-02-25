@@ -60,7 +60,7 @@ os.chdir(os.path.join( os.path.dirname( __file__ ), '..' ))
 #%% temp params
 
 A = 40*40*1e6
-lake_file = 'input/synthetic_lake_data.nc'
+lake_file = 'output/lakes_1.nc'
 climate_data = 'forcing/synthetic_tdd.txt'
 subset_file = None
 drainage_file = None
@@ -115,10 +115,10 @@ if subset_file:
 
 #%% OPTIONAL: convert ha to m^2
 
-lakes['area_water_permanent'] *= 10000
-lakes['area_water_seasonal'] *= 10000
-lakes['area_land'] *= 10000
-lakes['area_nodata'] *= 10000
+# lakes['area_water_permanent'] *= 10000
+# lakes['area_water_seasonal'] *= 10000
+# lakes['area_land'] *= 10000
+# lakes['area_nodata'] *= 10000
 
 
 #%% clean dataset and extract parameter estimates
