@@ -4,7 +4,7 @@ This code was written by Constanze Reinken.
 
 ## Installation
 
-TLM requires a Python 3.x environment with several packages (see requirements.txt). The most convenient way would be to set up an Anaconda environment using environment.yml.
+TLM requires a Python 3.x environment with several packages. The most convenient way would be to set up an Anaconda environment using environment.yml.
 
 ```
 conda env create -f environment.yml
@@ -29,7 +29,7 @@ $$
 a_i(t) = a_i(t-1)e^{(\mu - \frac{1}{2}\sigma^2)t+\sigma B(t)} ,
 $$
 
-where $B(t)$ is regular Brownian Motion. 
+    where $B(t)$ is regular Brownian Motion. 
     
 * Gradual Drainage: Geometric Brownian Motion can also lead to decreasing lake areas, either due to $\sigma$ or due to a negative drift value $\mu$. 
 
