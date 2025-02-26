@@ -298,7 +298,7 @@ for param_name, param in params.items():
 
 #%% save parameter and function in file
 
-with open('parameter/clim_param_func_test.py', 'w', encoding="utf-8") as f:
+with open('parameter/clim_param_func.py', 'w', encoding="utf-8") as f:
 
     for param_name, param in params.items():
 
