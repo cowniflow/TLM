@@ -97,20 +97,6 @@ for e in range(1,e_nr+1):
     ensemble['drained_frac'].append(area_drained_frac)
     ensemble['lake_nr'].append(lake_nr)
 
-    for e in range(1,e_nr+1):
-
-        PATH = "plots/run_" + str(e)
-        os.makedirs("plots/run_" + str(e), exist_ok=True)
-
-        def yr(x,pos):
-            """turn x axis value from m to km"""
-            return x/1000
-        formatter = FuncFormatter(yr)
-
-        plt.rcParams.update({'font.size': 18})
-        blue_patch = mpatches.Patch(color='blue', label='water')
-        brown_patch = mpatches.Patch(color='brown', label='drained')
-
 
 #%% ensemble plot
 
