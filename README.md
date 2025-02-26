@@ -23,13 +23,11 @@ $$
 P_f (k,A_f) = \frac{(\lambda_f A_f)^{k}}{k!} e^{- \lambda_f A_f} .
 $$
     
-* Expansion: The surface area of individual lakes change according to Geometric Brownian Motion. All lakes across a simulated area follow Geometric Brownian Motion with the same parameter drift $\mu$ and volatility $\sigma$, where $\sigma$ represents the random component and variety of lake behaviour. The individual lake areas $a_i(t)$ at time $t$ are calculated with
+* Expansion: The surface area of individual lakes change according to Geometric Brownian Motion. All lakes across a simulated area follow Geometric Brownian Motion with the same parameter drift $\mu$ and volatility $\sigma$, where $\sigma$ represents the random component and variety of lake behaviour. The individual lake areas $a_i(t)$ at time $t$ are calculated with the following euqation, where $B(t)$ is regular Brownian Motion: 
 
 $$
-a_i(t) = a_i(t-1)e^{(\mu - \frac{1}{2}\sigma^2)t+\sigma B(t)} ,
+a_i(t) = a_i(t-1)e^{(\mu - \frac{1}{2}\sigma^2)t+\sigma B(t)} 
 $$
-
-    where $B(t)$ is regular Brownian Motion. 
     
 * Gradual Drainage: Geometric Brownian Motion can also lead to decreasing lake areas, either due to $\sigma$ or due to a negative drift value $\mu$. 
 
