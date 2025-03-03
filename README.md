@@ -4,40 +4,40 @@ This code was written by Constanze Reinken.
 
 ## Installation
 
-TLM requires a Python 3.x environment with several packages. The most convenient way would be to set up an Anaconda environment using environment.yml.
+The Thermokarst Lake Model (TLM) requires a Python 3.x environment with several packages. The most convenient way would be to set up an Anaconda environment using environment.yml.
 
 ```
 conda env create -f environment.yml
 ```
 ## Overview
 
-The Thermokarst Lake Model (TLM) is designed to simulate changes in thermokarst lake distributions in thermokarst-affected regions. 
+TLM is designed to simulate changes in thermokarst lake distributions in thermokarst-affected regions. 
 
 The model code is written in Python and can be executed using shell scripts that contain the necessary parameter values. Besides the model code that performs the simulations (model.py), there are also scripts to extract parameter values from observational data (parameterization.py), plot timeseries of simulated lake number as well as water and drained area (plotting.py), and create animations of a spatial representation of lake distribution (animations.py). 
 
-The model represents lakes as circular objects and uses stochastic processes to represent the main processes behind thermokarst lake dynamics: 
+The model represents lakes as circular objects and uses stochastic processes to represent the main mechanics behind thermokarst lake dynamics: 
 
-* Formation: A Poisson process supplies the number of new lakes for each timestep (usually a year). More specifically, the number of new lakes is drawn at each timestep from a Poisson distribution with parameter $\lambda_f$, which is the formation rate. Each new lake gets two random centre coordinates. The probability of $k$ thermokarst depressions appearing during one year in $A_f$, which is the area available for formation, is
+* Formation: A Poisson process supplies the number of new lakes for each timestep (i.e. a year). More specifically, the number of new lakes is drawn at each timestep from a Poisson distribution with parameter $\lambda_f$, which is the formation rate. Each new lake gets two random centre coordinates. The probability of $k$ thermokarst depressions appearing at one timestep in $A_f$, which is the area available for formation, is
 
 $$
 P_f (k,A_f) = \frac{(\lambda_f A_f)^{k}}{k!} e^{- \lambda_f A_f} .
 $$
     
-* Expansion: The surface area of individual lakes change according to Geometric Brownian Motion. All lakes across a simulated area follow Geometric Brownian Motion with the same parameter drift $\mu$ and volatility $\sigma$, where $\sigma$ represents the random component and variety of lake behaviour. The individual lake areas $a_i(t)$ at time $t$ are calculated with the following euqation, where $B(t)$ is regular Brownian Motion: 
+* Expansion: The surface area of individual lakes changes according to Geometric Brownian Motion. All lakes across a simulated region follow Geometric Brownian Motion with the same drift $\mu$ and volatility $\sigma$, where $\sigma$ represents the random component and variety of lake behaviour. The individual lake areas $a_i(t)$ at time $t$ are therefore calculated with the following euqation, where $B(t)$ is regular Brownian Motion: 
 
 $$
 a_i(t) = a_i(t-1)e^{(\mu - \frac{1}{2}\sigma^2)t+\sigma B(t)} 
 $$
     
-* Gradual Drainage: Geometric Brownian Motion can also lead to decreasing lake areas, either due to $\sigma$ or due to a negative drift value $\mu$. 
+* Gradual Drainage: Geometric Brownian Motion can also lead to decreasing lake areas, either due to the influence of the volatility $\sigma$ or due to a negative drift value $\mu$. 
 
-* Abrupt Drainage: Abrupt drainage is represented using another Poisson process. A number of abruptly draining lakes is drawn from a Poisson process at each time step, where the parameter $\lambda_d$ is the abrupt drainage rate. The abruptly draining lakes are then randomly selected from the active lakes and reach a surface of zero within one timestep/year. The probability of $k$ drainage events during one year in $A_d$, which is the disturbed or water area (see 'Model Variants') within the system, is 
+* Abrupt Drainage: Abrupt drainage is represented using another Poisson process. A number of abruptly draining lakes is drawn from a Poisson process at each time step, where the parameter $\lambda_d$ is the abrupt drainage rate. The abruptly draining lakes are then randomly selected from the active lakes and reach a surface area of zero within one timestep (i.e. year). The probability of $k$ drainage events at each timestep in $A_d$, which is the disturbed or water area (see 'Model Variants') within the system, is 
 
 $$
 P_d (k,A_d) = \frac{(\lambda_d A_d)^{k}}{k!} e^{- \lambda_d A_d} .
 $$
 
-Lakes merge as soon as they start to overlap. A merging algorithm checks for overlapping lakes at each timestep and in case of overlap transfers the surface area of the smaller one to the larger one. It also determines the new centre coordinates of the resulting bigger lake by calculating the new centre of mass. 
+Lakes merge as soon as they start to overlap. A merging algorithm checks for overlapping lakes at each timestep and transfers the surface area of the smaller one to the larger one in case of overlap. It also determines the new centre coordinates of the resulting merged lake by calculating the new centre of mass. 
 
 ### Model Variants
 
@@ -52,12 +52,12 @@ There are two model variants. Which variant is used, can be determined in run_tl
 
 ###  parameterization.py
 
-This script calculates a timeseries of the stochastic parameter (drift, volatility, formation rate, abrupt drainage rate) from the parameterization dataset. It finds the best fitting regression function between the parameter and a climate variable (e.g thaw degree days) out of a collection of common functions. It outputs the function and fitted parameter values in file clim_param_func.py. The parameter estimates represents how lake area or number have changed from the previous year to the current year. As the default, this value is compared to the climate variable in the previous year. This can be changed in the script by indexing the climate variable differently. Make sure that the datasets span the necessary years. 
+This script calculates a timeseries of the stochastic parameter (drift, volatility, formation rate, abrupt drainage rate) from the parameterization dataset. It finds the best fitting regression function between the parameter and a climate variable (e.g thaw degree days) out of a collection of common functions. It outputs the function and fitted parameter values in file clim_param_func.py. The parameter estimates represents how lake area or number have changed from the previous year to the current year. As the default, this value is compared to the climate variable in the previous year. This can be changed in the script by indexing the climate variable differently. Make sure that the datasets span over the necessary time. 
 
 
 ### model.py
 
-This script contains the model code and simulates changes in thermokarst lake distributions using the parameterization contained in clim_param_func.py. The number of ensemble runs can be defined when executing the script. The script creates netcdf files for each ensemble run containing timeseries of the individual lakes and timeseries of drained and lake area fraction. For the latter, the model also outputs the ensemble mean. 
+This script contains the model code and simulates changes in thermokarst lake distribution using the parameterization contained in clim_param_func.py. The number of ensemble runs can be defined when executing the script. The script creates netcdf files for each ensemble run that contain timeseries of the individual lakes and timeseries of drained and lake area fraction. 
 
 ### plotting.py
 
@@ -69,7 +69,7 @@ This script creates a folder with spatial plots (as .png files) of the lakes for
 
 ## Prerequisites 
  
-All scripts require the packages *numpy* and *os* to be installed. Additionally, each script needs the packages as listed in the table below. All requirements (packages and dependencies) are contained in environment.yml. 
+All scripts require the package *numpy* to be installed. Additionally, each script needs the packages as listed in the table below. All requirements (packages and dependencies) are contained in environment.yml. 
 
 
 |                     | model.py   | parameterization.py | plotting.py | animations.py |
@@ -91,16 +91,16 @@ All scripts require the packages *numpy* and *os* to be installed. Additionally,
 
 ## Running the scripts
 
-The python scripts can be executed using shell scripts that contain timestep, variant, paths to initialization data, forcing and parameter files, and other parameter. If the python scripts shall be executed from an IDE, the paths / parameter from the shell scripts need to be put into the code directly. 
+The python scripts can be executed using shell scripts that contain timestep, variant, paths to initialization data, forcing and parameter files, and other parameter. If the python scripts shall be executed from an IDE, the paths and parameter from the shell scripts need to be put into the code directly. 
 
 ### run_parametarization.sh
 
 Shell script to execute parameterization.py. Needs following input: 
 - A: size of the study region
-- lake_file: path and file name for the data file with lake areas (.nc)
-- climate_data: path and file name for the file with data for one climate varialbe (.txt)
-- subset_file (OPTIONAL): path and file name for file with lake IDs for an area within lake_file area (.shp)
-- drainage_file (OPTIONAL): path and file name for file with drainage events in form of Chen et al 2023 (.shp)
+- lake_file: path and file name for the data file with lake  in the form of TODO (.nc)
+- climate_data: path and file name for the file with data for one climate variable (.txt)
+- subset_file (OPTIONAL): path and file name for file with a subset of lake IDs from lake_file (.shp or .gpkg)
+- drainage_file (OPTIONAL): path and file name for file with drainage events in form of Chen et al 2023 (.shp or .gpkg)
 
 ### run_tlm.sh
 
@@ -113,8 +113,8 @@ Shell script to execute model.py and plotting.py. Needs following input:
 - e_nr: number of ensemble runs
 - par_script: path and file name for the python script with parameter functions (e.g. clim_param_func.py)
 - file_ini_lakes (OPTIONAL): path and file name for file with initialization data (.nc); if left empty, the model will start with no lakes
-- subset_lakes (OPTIONAL): path and file name for file with IDs for an area within file_ini_lakes (.shp); if left empty, all lakes from file_ini_lakes will be used
-- file_forcing: path and file name with forcing data, i.e. one climate variable 
+- subset_lakes (OPTIONAL): path and file name for file with a subset of IDs from file_ini_lakes (.shp); if left empty, all lakes from file_ini_lakes will be used
+- file_forcing: path and file name with forcing data, i.e. one climate variable (.txt)
 
 ### create_animations.sh
 
@@ -122,14 +122,14 @@ Shell script to execute animations.py. Needs following input:
 - A: size of the simulated region
 - e_nr: number of ensemble runs
 - T: time span
-- dt: time step of simulation in years
-- folder_name: path to the lake data to be plotted
+- dt: time step / temporal frequency of animation
+- folder_name: path to the lake data that shall be plotted
 
 ## Folder structure
 
 ### input
 
-Observational / remote sensing data on lake areas can be stored here and used directly for parameterization.py and as an initialization dataset in model.py. The data needs to be in form of a netcdf file. If a subset from the netcdf file shall be extracted, this can be done using a shape or gpkg file containing the corresponding object names or ids. 
+Observational / remote sensing data on lake areas can be stored here and used directly for parameterization.py and as an initialization dataset in model.py. The data needs to be in form of a netcdf file with structure as TODO or model output file lakes.nc. If a subset from the netcdf file shall be extracted, this can be done using a shape or GPKG file containing the corresponding object names or ids. 
 
 ### parameter
 
@@ -149,14 +149,14 @@ The output from tlm.py is stored here. This includes:
 
 ### plots
 All plots that were created with plotting.py or animations.py are stored here. These include:
-- ensemble_plot.png: Timeseries of water area and drained fraction of the ensemble, including ensemble mean and standard deviation. 
+- ensemble_plot.png: Timeseries of water area and drained area fraction of the ensemble, including ensemble mean and standard deviation. 
 - circles: A folder with all .png files created for each ensemble.
 - run_{}.gif: A gif for each ensemble run, created from .png files from circles.
 - run_{}.mp4: A video file for each ensemble run, created from .png files from circles
 
 ## Test Case Data
 
-A synthetic lake dataset and forcing data were created, which the model can be tested with. The repository also contains the corresponsing parameter, model output and plots. 
+A synthetic lake dataset and forcing data were created, which the model can be tested with. The folders also contain the corresponsing parameter, model output and plots as examples. 
 
 ## TODO Zenodo
 
@@ -166,6 +166,11 @@ The accompanying scientific paper is in preparation.
 
 ## Contributors
 - Constanze Reinken (constanze.reinken@mpimet.mpg.de)
+
+## References
+
+- Chen, Y., Cheng, X., Liu, A. et al. Tracking lake drainage events and drained lake basin vegetation dynamics across the Arctic. Nat Commun 14, 7359 (2023). https://doi.org/10.1038/s41467-023-43207-0
+- TODO
 
 ## Acknowledgements
 This work was supported by the European Research Council project Q-Arctic (grant no. 951288). It used resources of the Deutsches Klimarechenzentrum (DKRZ) granted by its Scientific Steering Committee (WLA) under project ID bm1236. Special thanks goes to Victor Brovkin, Philipp deVrese, Ingmar Nitze and Helena Bergstedt for providing data and scientific expertise that contributed to the model development, as well as to Tobias Stacke for his input on code structure and style. 
