@@ -3,13 +3,13 @@
 # Size of study region
 A=$(echo "40*40*1e6" | bc)  # m2
 
-# lake area data
+# lake area data [in m2]
 lake_file="input/synthetic_lake_data.nc"
 
 # climate data
 climate_data="forcing/synthetic_tdd.txt"
 
-# subset of IDs (OPTIONAL. If left empty, all IDs from lake_file will be used)
+# OPTIONAL: subset of IDs (if empty, all IDs from lake_file will be used)
 subset_file=""
 
 # drainage event file in the style of Chen et al 2023 (OPTIONAL. If left empty, drainage rate will be calculated from lake area data)

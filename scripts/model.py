@@ -192,7 +192,7 @@ if ini_lakes:
     # Convert the DataFrame back to a Dataset
     lakes_nc = lakes_df.to_xarray()
 
-    # OPTIONAL: get subset of lakes that are within the region
+    # OPTIONAL: get subset of lakes that are within the region (shape or gpkg)
     if subset_lakes:
         region = gpd.read_file(subset_lakes)
         ID_list = list(region['id_geohash'])
@@ -206,7 +206,7 @@ if ini_lakes:
     # get initialization data
     x0_lake = lakes_nc['area_water_permanent'].sel(
         id_geohash=ID_list_cleaned).isel(date=0
-        ).values #*10000
+        ).values 
     x0_DLB = []
 else:
     print('No initialization data provided. Initializing with zero lakes.')

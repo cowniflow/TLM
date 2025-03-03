@@ -31,7 +31,7 @@ $$
     
 * Gradual Drainage: Geometric Brownian Motion can also lead to decreasing lake areas, either due to $\sigma$ or due to a negative drift value $\mu$. 
 
-* Abrupt Drainage: Abrupt drainage is represented using another Poisson process. A number of abruptly draining lakes is drawn from a Poisson process at each time step, where the parameter $\lambda_d$ is the abrupt drainage rate. The abruptly draining lakes are then randomly selected from the active lakes and reach a surface of zero within one timestep. The probability of $k$ drainage events during one year in $A_d$, which is the disturbed or water area (see 'Model Variants') within the system, is 
+* Abrupt Drainage: Abrupt drainage is represented using another Poisson process. A number of abruptly draining lakes is drawn from a Poisson process at each time step, where the parameter $\lambda_d$ is the abrupt drainage rate. The abruptly draining lakes are then randomly selected from the active lakes and reach a surface of zero within one timestep/year. The probability of $k$ drainage events during one year in $A_d$, which is the disturbed or water area (see 'Model Variants') within the system, is 
 
 $$
 P_d (k,A_d) = \frac{(\lambda_d A_d)^{k}}{k!} e^{- \lambda_d A_d} .
@@ -129,7 +129,7 @@ Shell script to execute animations.py. Needs following input:
 
 ### input
 
-Observational / remote sensing data on lake areas can be stored here and used directly for parameterization.py and as an initialization dataset in model.py. The data needs to be in form of a netcdf file. If a subset from the netcdf file shall be extracted, this can be done using a shapefile containing the corresponding object names or ids. 
+Observational / remote sensing data on lake areas can be stored here and used directly for parameterization.py and as an initialization dataset in model.py. The data needs to be in form of a netcdf file. If a subset from the netcdf file shall be extracted, this can be done using a shape or gpkg file containing the corresponding object names or ids. 
 
 ### parameter
 

@@ -94,7 +94,7 @@ lakes = lakes_df.to_xarray()
 datetime = lakes.date.values
 years = lakes.date.values
 
-#%% OPTIONAL: import IDs for subset of the dataset via shapefile
+#%% OPTIONAL: import IDs for subset of the dataset via shape or gpkg file
 
 # import shapefile for area of interest, with lakes as polygons
 if subset_file:
