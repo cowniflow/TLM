@@ -277,21 +277,26 @@ for param_name, param in params.items():
     for func in functions:
         # Create a mask for non-nan values
         mask = ~np.isnan(param[1:]) & ~np.isinf(param[1:])
-        # Perform the regression
-        popt, pcov = curve_fit(func, climvar[:-1][mask], param[1:][mask])
-        # Calculate the y values of the fitted function
-        y_fit = func(climvar[:-1][mask], *popt)
-        # Calculate the R-squared value
-        r2 = r2_score(param[1:][mask], y_fit)
+        try:
+            # Perform the regression
+            popt, pcov = curve_fit(func, climvar[:-1][mask], param[1:][mask])
+            # Calculate the y values of the fitted function
+            y_fit = func(climvar[:-1][mask], *popt)
+            # Calculate the R-squared value
+            r2 = r2_score(param[1:][mask], y_fit)
 
-        non_zero_mask = mask & (param[1:] != 0)
-        if r2 < 0.5 or np.sum(non_zero_mask) < 3:
+            non_zero_mask = mask & (param[1:] != 0)
+            if r2 < 0.5 or np.sum(non_zero_mask) < 3:
+                continue
+
+            elif r2 > best_r2:
+                best_r2 = r2
+                best_func = func
+                best_popt = popt
+        except RuntimeError as e:
+            # Handle cases where curve_fit fails
+            print(f"Curve fitting failed for {param_name} with {func.__name__}: {e}")
             continue
-
-        elif r2 > best_r2:
-            best_r2 = r2
-            best_func = func
-            best_popt = popt
 
     best_fit[param_name] = [best_func, best_popt, best_r2]
 
