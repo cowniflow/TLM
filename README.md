@@ -173,4 +173,4 @@ The accompanying scientific paper is in preparation.
 - TODO
 
 ## Acknowledgements
-This work was supported by the European Research Council project Q-Arctic (grant no. 951288). It used resources of the Deutsches Klimarechenzentrum (DKRZ) granted by its Scientific Steering Committee (WLA) under project ID bm1236. Special thanks goes to Victor Brovkin, Philipp deVrese, Ingmar Nitze and Helena Bergstedt for providing data and scientific expertise that contributed to the model development, as well as to Tobias Stacke for his input on code structure and style. 
+This work was supported by the European Research Council project Q-Arctic (grant no. 951288). It used resources of the Deutsches Klimarechenzentrum (DKRZ) granted by its Scientific Steering Committee (WLA) under project ID bm1236. Special thanks goes to Victor Brovkin, Philipp deVrese, Ingmar Nitze, Helena Bergstedt and Guido Grosse for providing data and scientific expertise that contributed to the model development, as well as to Tobias Stacke for his input on code structure and style. 
