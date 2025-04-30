@@ -170,16 +170,16 @@ years = np.arange(1900, 1900 + T, dt) # time points
 
 A_lim = A * frac_lim # maximum potential disturbed area in m^2
 
-#%% load climate data and extrapolate to the desired time points
+#%% load climate data if available
 
-climvar = np.loadtxt(forcing)[:-1]
-original_time_points = np.linspace(0, len(climvar) - 1, len(climvar))
-new_time_points = np.linspace(0, len(climvar) - 1, n)
-climvar = np.interp(new_time_points, original_time_points, climvar)
+if forcing:
+    climvar = np.loadtxt(forcing)
+else:
+    climvar = []
 
 #%% initialization
 
-max_f = np.max(f_rate(climvar)) # maximum formation rate
+max_f = np.max(f_rate(climvar[:T])) # maximum formation rate
 # generate max. number of potential new lakes
 form_n = math.ceil(A * T * max_f)
 
@@ -286,9 +286,9 @@ for e in range(1,e_nr + 1):
         idx_dlb[t] = idx_dlb[t-1][:]
 
         # merging lakes
-        #area_water[t], xcoord[t], ycoord[t] = area_water[t-1], xcoord[t-1], ycoord[t-1]
-        area_water[t], xcoord[t], ycoord[t] = merge(area_water[t-1],
-                                                    xcoord[t-1], ycoord[t-1])
+        area_water[t], xcoord[t], ycoord[t] = area_water[t-1], xcoord[t-1], ycoord[t-1]
+        #area_water[t], xcoord[t], ycoord[t] = merge(area_water[t-1],
+        #                                            xcoord[t-1], ycoord[t-1])
 
         # Remove lakes with area_water of zero after merging
         for l in idx_lake[t][:]:
