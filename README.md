@@ -97,7 +97,7 @@ The python scripts can be executed using shell scripts that contain timestep, va
 
 Shell script to execute parameterization.py. Needs following input: 
 - A: size of the study region
-- lake_file: path and file name for the data file with lake  in the form of TODO (.nc)
+- lake_file: path and file name for the data file with lake  in the form of Nitze & Nicholson 2025 (.nc)
 - climate_data: path and file name for the file with data for one climate variable (.txt)
 - subset_file (OPTIONAL): path and file name for file with a subset of lake IDs from lake_file (.shp or .gpkg)
 - drainage_file (OPTIONAL): path and file name for file with drainage events in form of Chen et al 2023 (.shp or .gpkg)
@@ -170,7 +170,7 @@ The accompanying scientific paper is in preparation.
 ## References
 
 - Chen, Y., Cheng, X., Liu, A. et al. Tracking lake drainage events and drained lake basin vegetation dynamics across the Arctic. Nat Commun 14, 7359 (2023). https://doi.org/10.1038/s41467-023-43207-0
-- TODO
+- Nitze, I., & Nicholson, T. (2025). Surface water data: Supplementary Dataset used in: Reinken et al.: Stochastic Modelling of Thermokarst Lakes: Size Distributions and Dynamic Regimes (v1.0) [Data set]. Zenodo. https://doi.org/10.5281/zenodo.15011122
 
 ## Acknowledgements
 This work was supported by the European Research Council project Q-Arctic (grant no. 951288). It used resources of the Deutsches Klimarechenzentrum (DKRZ) granted by its Scientific Steering Committee (WLA) under project ID bm1236. Special thanks goes to Victor Brovkin, Philipp deVrese, Ingmar Nitze, Helena Bergstedt and Guido Grosse for providing data and scientific expertise that contributed to the model development, as well as to Tobias Stacke for his input on code structure and style. 
