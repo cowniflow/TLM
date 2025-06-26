@@ -137,7 +137,7 @@ for t in range(1,len(years)):
 
     for i in lakes.id_geohash.values:
 
-        # if more than 10% of the data is missing, set to nan
+        # if data is missing, set to nan
         polygon_area = lakes.area_water_permanent.sel(
             id_geohash=i,date=datetime[t]) + lakes.area_water_seasonal.sel(
                 id_geohash=i,date=datetime[t]) + lakes.area_nodata.sel(
