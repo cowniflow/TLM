@@ -162,7 +162,9 @@ A synthetic lake dataset and forcing data were created, which the model can be t
 
 ## Paper
 
-The accompanying scientific paper is in preparation. 
+The accompanying scientific paper is available as a preprint:
+
+Reinken, C., Brovkin, V., de Vrese, P., Nitze, I., Bergstedt, H., and Grosse, G.: Stochastic Modelling of Thermokarst Lakes: Size Distributions and Dynamic Regimes, EGUsphere [preprint], https://doi.org/10.5194/egusphere-2025-1817, 2025. 
 
 ## Contributors
 - Constanze Reinken (constanze.reinken@mpimet.mpg.de)
