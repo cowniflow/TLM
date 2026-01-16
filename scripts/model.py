@@ -49,15 +49,18 @@ import numpy as np
 import xarray as xr
 import geopandas as gpd
 from tqdm import tqdm
+import random
 
 #%% directories
+
+# exp_dir = "VolM.5/test"
 
 # set working directory
 os.chdir(os.path.join( os.path.dirname( __file__ ), '..' ))
 # create output folder
 if not os.path.exists('output'):
     os.makedirs('output')
-
+    
 #%% define functions
 
 def geometric_brownian(x0, drift, volatility, timestep):
@@ -164,7 +167,7 @@ func_mu = param_module.func_mu
 #%% define spatial domain, temporal domain & time step
 
 n = int(T/dt) # nr of steps
-years = np.arange(1900, 1900 + T, dt) # time points
+years = np.arange(0, T, dt) # time points
 
 #%% define maximum potential disturbed area
 
@@ -172,10 +175,7 @@ A_lim = A * frac_lim # maximum potential disturbed area in m^2
 
 #%% load climate data if available
 
-if forcing:
-    climvar = np.loadtxt(forcing)
-else:
-    climvar = []
+climvar = np.loadtxt(forcing)
 
 #%% initialization
 
@@ -184,6 +184,7 @@ max_f = np.max(f_rate(climvar[:T])) # maximum formation rate
 form_n = math.ceil(A * T * max_f)
 
 if ini_lakes:
+    print('Importing initialization data from ' + ini_lakes)
     # import / create initialization data (lake sizes, DLB sizes)
     lake_dataset = xr.open_dataset(ini_lakes)
     lakes_df = lake_dataset.to_dataframe()
@@ -194,6 +195,7 @@ if ini_lakes:
 
     # OPTIONAL: get subset of lakes that are within the region (shape or gpkg)
     if subset_lakes:
+        print('Subsetting lakes based on ' + subset_lakes)
         region = gpd.read_file(subset_lakes)
         ID_list = list(region['id_geohash'])
         ID_list_cleaned = []
@@ -202,11 +204,11 @@ if ini_lakes:
                 ID_list_cleaned.append(index)
     else:
         ID_list_cleaned = lakes_nc.id_geohash.values
-
+    
     # get initialization data
     x0_lake = lakes_nc['area_water_permanent'].sel(
-        id_geohash=ID_list_cleaned).isel(date=0
-        ).values 
+        id_geohash=ID_list_cleaned).isel(date=16
+        ).values * 10000
     x0_DLB = []
 else:
     print('No initialization data provided. Initializing with zero lakes.')
@@ -216,8 +218,8 @@ else:
 lake_nr = len(x0_lake) + len(x0_DLB) + int(form_n)
 idx = np.arange(0,lake_nr)
 idx = idx.astype(str)
-area_water = np.zeros((n,lake_nr))
-area_land = np.zeros((n,lake_nr))
+area_water = np.zeros((n,lake_nr)) 
+area_land = np.zeros((n,lake_nr)) 
 age = np.zeros((n,lake_nr),dtype=object)
 area_status = np.empty((n,lake_nr),dtype=object)
 area_status[:] = np.nan
@@ -248,6 +250,9 @@ if len(x0_lake) != 0 or len(x0_DLB) != 0:
 # run ensemble simulation
 for e in range(1,e_nr + 1):
 
+
+    # load initial lakes from synthetic dataset
+
     age = np.zeros((n,lake_nr),dtype=object)
     area_status = np.empty((n,lake_nr),dtype=object)
     area_status[:] = np.nan
@@ -270,13 +275,17 @@ for e in range(1,e_nr + 1):
     A_disturbed[0] = A_drained[0] + np.nansum(area_water[0,:])
     A_disturbed[1:] = np.nan
     A_undisturbed = np.zeros(T)  # undisturbed area
-    A_undisturbed[0] = A - min(A_disturbed[0],A)
+    if variant == '1':
+        A_undisturbed[0] = A_lim - min(A_disturbed[0],A_lim)
+    elif variant == '2':
+        A_undisturbed[0] = A - min(A_disturbed[0],A)
     A_undisturbed[1:] = np.nan
     form_arr = np.zeros(n) # array with number of new lakes at each t
     drain_arr = np.zeros(n) # array with abruptly drained lakes at each t
     merged_lakes = np.zeros(n)  # counter of merged lakes
     lake_count = np.zeros(n)
     lake_count[0] = len(x0_lake)
+
 
     # loop over time steps
     for t in tqdm(range(1,n), desc="Simulating ensemble run " + str(e),
@@ -286,10 +295,7 @@ for e in range(1,e_nr + 1):
         idx_dlb[t] = idx_dlb[t-1][:]
 
         # merging lakes
-        area_water[t], xcoord[t], ycoord[t] = area_water[t-1], xcoord[t-1], ycoord[t-1]
-        #area_water[t], xcoord[t], ycoord[t] = merge(area_water[t-1],
-        #                                            xcoord[t-1], ycoord[t-1])
-
+        area_water[t], xcoord[t], ycoord[t] = merge(area_water[t-1], xcoord[t-1], ycoord[t-1])
         # Remove lakes with area_water of zero after merging
         for l in idx_lake[t][:]:
             if area_water[t, l] == 0 and area_water[t-1, l] != 0:
@@ -331,7 +337,7 @@ for e in range(1,e_nr + 1):
         # abrupt drainage
         DRAIN_NR = 0
         if len(idx_lake[t]) != 0:
-            if d_rate == 0:
+            if d_rate(0) == 0 or A_disturbed[t-1] <= 0:
                 continue
             else:
                 if variant == '1':
@@ -380,15 +386,29 @@ for e in range(1,e_nr + 1):
                                                     dt)))
         form_arr[t] = FORM_NR
         for l in possible_idx[:int(FORM_NR)]:
-            area_water[t,l] = 1
+            area_water[t,l] = 10000 # 1 ha initial lake area
             new_idx.append(l)
         idx_lake[t] = [*idx_lake[t], *new_idx]
 
         # update A_drained, A_disturbed, A_undisturbed and lake_count
-        A_drained[t] = max(A_drained[t-1] + (np.nansum(area_water[t-1,:]) -
-                                             np.nansum(area_water[t,:])),0)
+        
+        A_drained[t] = A_drained[t-1] + np.nansum(area_land[t,:]) - \
+            np.nansum(area_land[t-1,:])
+        if variant == '2':
+            # for variant 2, account for some new water area that appears on 
+            # drained area according to the ratio of drained area to total area
+            new_water_area = 0 # new water area
+            for l in (idx_lake[t] + idx_dlb[t]):
+                if area_water[t-1,l] < area_water[t,l] and area_land[t-1,l] == 0:
+                    new_water_area += (area_water[t,l] - area_water[t-1,l])
+            A_drained[t] += (A_drained[t]/A) * new_water_area
+
+        A_drained[t] = max(min(A_drained[t],A - np.nansum(area_water[t,:])), 0) 
         A_disturbed[t] = min(A_drained[t] + np.nansum(area_water[t,:]),A)
-        A_undisturbed[t] = A - min(A_disturbed[t],A)
+        if variant == '1':
+            A_undisturbed[t] = A_lim - min(A_disturbed[t],A_lim)
+        elif variant == '2':
+            A_undisturbed[t] = A - min(A_disturbed[t],A)
         lake_count[t] = len(idx_lake[t])
 
     # create the xarray Dataset with latitude and longitude included
