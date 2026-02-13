@@ -69,7 +69,12 @@ def geometric_brownian(x0, drift, volatility, timestep):
                 + volatility * np.random.normal(0, np.sqrt(timestep)))
     return x
 
-def merge(area, x, y):
+# def merging_probability(num_circles, water_area, A):
+#     """Calculate merging probability based on number of circles and coverage"""
+#     # Example function: merging probability increases with coverage and number of circles
+#     return 0.3680011237271907 * num_circles * np.log((water_area / A) * 15.72976818817072)
+
+def merge(area, x, y, initial_areas):
     """Merging algorithm for circles"""
 
     area_new = area.copy()
@@ -117,7 +122,36 @@ def merge(area, x, y):
                             area_new[i] += area_new[j]
                             area_new[j] = 0
 
-    return area_new, x_new, y_new
+                        initial_areas.append((i, j, area[i], area[j], (x[i], y[i]), (x[j], y[j])))
+
+    return area_new, x_new, y_new, initial_areas
+
+def post_merge_fission(area_water, ini_areas, idx_lake, fission_lakes, x, y):
+    """Allow clusters to split based on a dynamic threshold combining initial area sum and current area proportion."""
+
+    for n in ini_areas:
+        i, j = n[0], n[1]
+        initial_area_sum = n[2] + n[3]  
+        current_area_sum = area_water[i] + area_water[j]
+        if current_area_sum == 0:
+            continue
+        elif current_area_sum < initial_area_sum:
+            # divide lakes back into individual lakes with their current areas
+            ini_areas.remove(n)
+            proportion_i = n[2] / initial_area_sum
+            proportion_j = n[3] / initial_area_sum
+            area_water[i] = current_area_sum * proportion_i
+            area_water[j] = current_area_sum * proportion_j
+            x[i], y[i] = n[4][0], n[4][1]
+            x[j], y[j] = n[5][0], n[5][1]
+            # put indices back into idx_lake
+            if i not in idx_lake:
+                idx_lake.append(i)
+            if j not in idx_lake:
+                idx_lake.append(j)
+            fission_lakes += 1
+    
+    return area_water, idx_lake, fission_lakes, x, y, ini_areas
 
 
 #%% Import the necessary parameter, initialization data and forcing
@@ -285,6 +319,7 @@ for e in range(1,e_nr + 1):
     merged_lakes = np.zeros(n)  # counter of merged lakes
     lake_count = np.zeros(n)
     lake_count[0] = len(x0_lake)
+    initial_areas = [] # list to track initial areas of merged lakes for potential fission
 
 
     # loop over time steps
@@ -295,7 +330,7 @@ for e in range(1,e_nr + 1):
         idx_dlb[t] = idx_dlb[t-1][:]
 
         # merging lakes
-        area_water[t], xcoord[t], ycoord[t] = merge(area_water[t-1], xcoord[t-1], ycoord[t-1])
+        area_water[t], xcoord[t], ycoord[t], initial_areas = merge(area_water[t-1], xcoord[t-1], ycoord[t-1], initial_areas)
         # Remove lakes with area_water of zero after merging
         for l in idx_lake[t][:]:
             if area_water[t, l] == 0 and area_water[t-1, l] != 0:
@@ -333,6 +368,9 @@ for e in range(1,e_nr + 1):
                 age[t,l] = 'nK'
             else:
                 age[t,l] = int(age[t-1,l]) + 1
+
+        # post-merge fission
+        area_water[t], idx_lake[t], fission_lakes, xcoord[t], ycoord[t], initial_areas = post_merge_fission(area_water[t], initial_areas, idx_lake[t], 0, xcoord[t], ycoord[t])
 
         # abrupt drainage
         DRAIN_NR = 0
@@ -459,3 +497,4 @@ for e in range(1,e_nr + 1):
 #%%
 print('Simulations finished!')
 # %%
+
