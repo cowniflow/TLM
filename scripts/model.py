@@ -128,7 +128,7 @@ def merge(area, x, y, initial_areas):
 
 def post_merge_fission(area_water, ini_areas, idx_lake, fission_lakes, x, y):
     """Allow clusters to split based on a dynamic threshold combining initial area sum and current area proportion."""
-
+    
     for n in ini_areas:
         i, j = n[0], n[1]
         initial_area_sum = n[2] + n[3]  
@@ -320,6 +320,7 @@ for e in range(1,e_nr + 1):
     lake_count = np.zeros(n)
     lake_count[0] = len(x0_lake)
     initial_areas = [] # list to track initial areas of merged lakes for potential fission
+    fission_lakes = np.zeros(n) # counter of fission lakes
 
 
     # loop over time steps
@@ -357,7 +358,7 @@ for e in range(1,e_nr + 1):
                                                              mu, sigma, dt),
                                           area_water[t-1,l])
             if variant == '1':
-                if (A_disturbed[t-1]+(area_water[t,l]-area_water[t-1,l])) >= \
+                if (A_disturbed[t-1]+(np.nansum(area_water[t,l]-area_water[t-1,l]))) >= \
                     A_lim:
                     area_water[t,l] = min(geometric_brownian(area_water[t,l],
                                                              mu, sigma, dt),
@@ -369,8 +370,8 @@ for e in range(1,e_nr + 1):
             else:
                 age[t,l] = int(age[t-1,l]) + 1
 
-        # post-merge fission
-        area_water[t], idx_lake[t], fission_lakes, xcoord[t], ycoord[t], initial_areas = post_merge_fission(area_water[t], initial_areas, idx_lake[t], 0, xcoord[t], ycoord[t])
+        # post-merge fission 
+        area_water[t], idx_lake[t], fission_lakes[t], xcoord[t], ycoord[t], initial_areas = post_merge_fission(area_water[t], initial_areas, idx_lake[t], fission_lakes[t], xcoord[t], ycoord[t])
 
         # abrupt drainage
         DRAIN_NR = 0
@@ -439,7 +440,7 @@ for e in range(1,e_nr + 1):
             for l in (idx_lake[t] + idx_dlb[t]):
                 if area_water[t-1,l] < area_water[t,l] and area_land[t-1,l] == 0:
                     new_water_area += (area_water[t,l] - area_water[t-1,l])
-            A_drained[t] += (A_drained[t]/A) * new_water_area
+            A_drained[t] -= (A_drained[t]/A) * new_water_area
 
         A_drained[t] = max(min(A_drained[t],A - np.nansum(area_water[t,:])), 0) 
         A_disturbed[t] = min(A_drained[t] + np.nansum(area_water[t,:]),A)
