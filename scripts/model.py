@@ -303,12 +303,12 @@ for e in range(1,e_nr + 1):
         xcoord[:,index] = xcoord_ini[index]
         ycoord[:,index] = ycoord_ini[index]
 
-    A_drained = np.zeros(T)  # drained area
+    A_drained = np.zeros(n)  # drained area
     A_drained[1:] = np.nan
-    A_disturbed = np.zeros(T)  # undisturbed area
+    A_disturbed = np.zeros(n)  # undisturbed area
     A_disturbed[0] = A_drained[0] + np.nansum(area_water[0,:])
     A_disturbed[1:] = np.nan
-    A_undisturbed = np.zeros(T)  # undisturbed area
+    A_undisturbed = np.zeros(n)  # undisturbed area
     if variant == '1':
         A_undisturbed[0] = A_lim - min(A_disturbed[0],A_lim)
     elif variant == '2':
