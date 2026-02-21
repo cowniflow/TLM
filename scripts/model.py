@@ -145,9 +145,9 @@ def post_merge_fission(area_water, ini_areas, idx_lake, fission_lakes, x, y):
             x[i], y[i] = n[4][0], n[4][1]
             x[j], y[j] = n[5][0], n[5][1]
             # put indices back into idx_lake
-            if i not in idx_lake:
+            if i not in idx_lake and area_water[i] != 0:
                 idx_lake.append(i)
-            if j not in idx_lake:
+            if j not in idx_lake and area_water[j] != 0:
                 idx_lake.append(j)
             fission_lakes += 1
     
