@@ -37,7 +37,7 @@ $$
 P_d (k,A_d) = \frac{(\lambda_d A_d)^{k}}{k!} e^{- \lambda_d A_d} .
 $$
 
-Lakes merge as soon as they start to overlap. A merging algorithm checks for overlapping lakes at each timestep and transfers the surface area of the smaller one to the larger one in case of overlap. It also determines the new centre coordinates of the resulting merged lake by calculating the new centre of mass. 
+Lakes merge as soon as they start to overlap. A merging algorithm checks for overlapping lakes at each timestep and transfers the surface area of the smaller one to the larger one in case of overlap. It also determines the new centre coordinates of the resulting merged lake by calculating the new centre of mass. Merged lakes split again if their area has become smaller than the sum of the area of the two initial lakes. 
 
 ### Model Variants
 
