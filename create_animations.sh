@@ -4,7 +4,7 @@
 A=$(echo "40*40*1e6" | bc) # m2
 
 # Nr. of ensemble runs
-e_nr=1
+e_nr=5
 
 # Time span
 T=100
