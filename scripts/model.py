@@ -237,7 +237,7 @@ if ini_lakes:
     # get initialization data
     x0_lake = lakes_nc['area_water_permanent'].sel(
         id_geohash=ID_list_cleaned).isel(date=16
-        ).values * 10000
+        ).values  
     x0_DLB = []
 else:
     print('No initialization data provided. Initializing with zero lakes.')
@@ -348,14 +348,12 @@ for e in range(1,e_nr + 1):
             # Check if A_disturbed / area_water is below A_lim
             if variant == '2':
                 if np.sum(area_water[t,:]) >= A_lim:
-                    area_water[t,l] = min(geometric_brownian(area_water[t,l],
-                                                             mu, sigma, dt),
+                    area_water[t,l] = min(area_water[t,l],
                                           area_water[t-1,l])
             if variant == '1':
                 if (A_disturbed[t-1]+(np.nansum(area_water[t,l]-area_water[t-1,l]))) >= \
                     A_lim:
-                    area_water[t,l] = min(geometric_brownian(area_water[t,l],
-                                                             mu, sigma, dt),
+                    area_water[t,l] = min(area_water[t,l],
                                         area_water[t-1,l])
             # track age & type
             area_status[t,l] = 'L'
