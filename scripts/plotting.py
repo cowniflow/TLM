@@ -177,6 +177,9 @@ elif e_nr == 1:
     axs[1].set_xlabel('Year')
 
 plt.tight_layout()
+# create directory for plots if it does not exist
+if not os.path.exists("plots"):
+    os.makedirs("plots")
 plt.savefig("plots/ensemble_plot.png", dpi = 200,bbox_inches="tight")
 
 #%%

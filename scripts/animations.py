@@ -88,9 +88,10 @@ ensemble = {
 
 for e in range(1,e_nr+1):
 
-    ds = nc.Dataset("output/" + folder + "lakes_" + str(e) + ".nc")
+    ds = nc.Dataset(folder + "lakes_" + str(e) + ".nc")
  
-    PATH = "plots/" + folder
+    PATH = "plots/run_" + str(e)
+    os.makedirs(PATH, exist_ok=True)
 
     # create circle plots
     os.makedirs(PATH + "/circles", exist_ok=True)
